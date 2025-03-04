@@ -9,6 +9,56 @@
 #include <defs_iio.h>
 #include <sprsp_ac_iio.h>
 
+static void setup_gpio(void) {
+#define PID_GPIOCOM0   0x6E
+#define PID_GPIOCOM1   0x6D
+#define PID_GPIOCOM3   0x6B
+#define PID_GPIOCOM4   0x6A
+#define PID_GPIOCOM5   0x69
+
+#define PAD_OWN_GPPC_A_1 0xA4
+#define PAD_CFG_DW0_GPPC_A_10 0x7A0
+#define PAD_CFG_DW1_GPPC_A_10 0x7A4
+#define PAD_CFG_DW2_GPPC_A_10 0x7A8
+#define PAD_CFG_DW3_GPPC_A_10 0x7AC
+
+#define PAD_OWN_GPP_H_1 0xA4
+#define PAD_CFG_DW0_GPPC_H_15 0x7F0
+#define PAD_CFG_DW1_GPPC_H_15 0x7F4
+#define PAD_CFG_DW2_GPPC_H_15 0x7F8
+#define PAD_CFG_DW3_GPPC_H_15 0x7FC
+// Definition for PCR base address (defined in PchReservedResources.h)
+#define PCH_PCR_BASE_ADDRESS		0xFD000000
+#define PCH_PCR_MMIO_SIZE		0x01000000
+#define PCH_PCR_ADDRESS(Pid, Offset)	(PCH_PCR_BASE_ADDRESS | ((unsigned char) (Pid) << 16) | (unsigned short) (Offset))
+
+    printk(BIOS_DEBUG, "%s():%s:%d\n\r", __func__, __FILE__, __LINE__);
+    printk(BIOS_DEBUG, "Set active high %s\n\r", "TP_GPPC_A_10 - TP604");
+    // Set GPPC_A_10_SRCCLKREQ_N_0 - BD17 - TP_GPPC_A_10 - TP604 active (high voltage, 1v8)
+    uint32_t tmp = *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM0, PAD_OWN_GPPC_A_1));
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM0, PAD_OWN_GPPC_A_1)) = tmp & (~(0xF << 8) & 0xFFFFFFFF);
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM0, PAD_CFG_DW0_GPPC_A_10)) = (0x1 << 9) | 0x1;
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM0, PAD_CFG_DW1_GPPC_A_10)) = 0x0;
+    // Select voltage 1v8
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM0, PAD_CFG_DW2_GPPC_A_10)) = (0x1 << 8);
+    // Select voltage 3v3
+    //*(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM0, PAD_CFG_DW2_GPPC_A_10)) = (0x0 << 8);
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM0, PAD_CFG_DW3_GPPC_A_10)) = 0x0;
+
+    printk(BIOS_DEBUG,"Set active high %s\n\r", "BIOS_READY_PFR_N_R");
+    // Set GPPC_H_15_FLEX_CLK_OUT_0 - J2 - BIOS_READY_PFR_N_R - active (high voltage, 1v8)
+    tmp = *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM4, PAD_OWN_GPP_H_1));
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM4, PAD_OWN_GPP_H_1)) = tmp & (~(0xF << 28) & 0xFFFFFFFF);
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM4, PAD_CFG_DW0_GPPC_H_15)) = (0x1 << 9) | 0x1;
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM4, PAD_CFG_DW1_GPPC_H_15)) = 0x0;
+    // Select voltage 1v8
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM4, PAD_CFG_DW2_GPPC_H_15)) = (0x1 << 8);
+    // Select voltage 3v3
+    //*(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM4, PAD_CFG_DW2_GPPC_H_15)) = (0x0 << 8);
+    *(uint32_t *)(PCH_PCR_ADDRESS(PID_GPIOCOM4, PAD_CFG_DW3_GPPC_H_15)) = 0x0;
+
+}
+
 void mainboard_ewl_check(void)
 {
 	if (CONFIG(OCP_EWL))
@@ -75,4 +125,5 @@ void mainboard_memory_init_params(FSPM_UPD *mupd)
 	mupd->FspmConfig.promoteWarnings = 0x0;
 	soc_config_iio(mupd, ac_iio_pci_port, ac_iio_bifur);
 	mainboard_config_iio(mupd);
+	setup_gpio();
 }
