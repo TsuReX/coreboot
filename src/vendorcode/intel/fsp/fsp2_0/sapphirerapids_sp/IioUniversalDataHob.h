@@ -1,31 +1,10 @@
 /** @file
+  Data format for IIO Universal Data HOB Structure
 
-Copyright (c) 2019-2023, Intel Corporation. All rights reserved.<BR>
+  @copyright
+  Copyright 1999 - 2021 Intel Corporation. <BR>
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this
-  list of conditions and the following disclaimer in the documentation and/or
-  other materials provided with the distribution.
-* Neither the name of Intel Corporation nor the names of its contributors may
-  be used to endorse or promote products derived from this software without
-  specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-  THE POSSIBILITY OF SUCH DAMAGE.
-
+  SPDX-License-Identifier: BSD-3-Clause
 **/
 
 #ifndef _IIO_UNIVERSAL_DATA_HOB_H_
@@ -41,37 +20,37 @@ are permitted provided that the following conditions are met:
 #endif
 
 #if (MAX_SOCKET == 1)
-  #define MAX_FW_KTI_PORTS        4    // Maximum KTI PORTS to be used in structure definition.
+  #define MAX_FW_KTI_PORTS     4    // Maximum KTI PORTS to be used in structure definition.
 #else
-  #define MAX_FW_KTI_PORTS        6    // Maximum KTI PORTS to be used in structure definition
+  #define MAX_FW_KTI_PORTS     6    // Maximum KTI PORTS to be used in structure definition
 #endif //(MAX_SOCKET == 1)
 
 #ifndef MAX_IMC
-#define MAX_IMC                   4    // Maximum memory controllers per socket
+#define MAX_IMC                       4                     // Maximum memory controllers per socket
 #endif
 
 #ifndef MAX_MC_CH
-#define MAX_MC_CH                 2    // Max number of channels per MC (3 for EP)
+#define MAX_MC_CH                     2                     // Max number of channels per MC (3 for EP)
 #endif
 
 #ifndef MAX_CH
-#define MAX_CH                    ((MAX_IMC)*(MAX_MC_CH))     // Max channels per socket (worst case EP * EX combination = 16)
+#define MAX_CH                        ((MAX_IMC)*(MAX_MC_CH))     // Max channels per socket (worst case EP * EX combination = 16)
 #endif
 
-#define MC_MAX_NODE               (MAX_SOCKET * MAX_IMC)  // Max number of memory nodes
+#define MC_MAX_NODE                   (MAX_SOCKET * MAX_IMC)  // Max number of memory nodes
 
 #ifndef MAX_IIO_PORTS_PER_SOCKET
-#define MAX_IIO_PORTS_PER_SOCKET  57
+#define MAX_IIO_PORTS_PER_SOCKET   57
 #endif
 
 #ifndef MAX_IIO_STACK
-#define MAX_IIO_STACK             12
+#define MAX_IIO_STACK              12
 #endif
 
-#define MAX_LOGIC_IIO_STACK       14
+#define MAX_LOGIC_IIO_STACK        14
 
-#define MAX_COMPUTE_DIE           1
-#define MAX_CHA_MAP               (2 * MAX_COMPUTE_DIE)  //for GNR & SRF only, each compute die has its own CAPID6 & CAPID7 (i.e. 2 CAPID registers)
+#define MAX_COMPUTE_DIE 1
+#define MAX_CHA_MAP                 (2 * MAX_COMPUTE_DIE)  //for GNR & SRF only, each compute die has its own CAPID6 & CAPID7 (i.e. 2 CAPID registers)
 
 #pragma pack(1)
 

@@ -3,7 +3,7 @@
   Architecture Specification v2.2.
  @copyright
   Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
-  SPDX-License-Identifier: BSD-2-Clause-Patent
+  SPDX-License-Identifier: BSD-3-Clause
 **/
 
 #ifndef _FSP_EAS_H_

@@ -1,31 +1,10 @@
 /** @file
+  System Information HOB Hearder File
 
-Copyright (c) 2019-2023, Intel Corporation. All rights reserved.<BR>
+  @copyright
+  Copyright 2017 - 2021 Intel Corporation. <BR>
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this
-  list of conditions and the following disclaimer in the documentation and/or
-  other materials provided with the distribution.
-* Neither the name of Intel Corporation nor the names of its contributors may
-  be used to endorse or promote products derived from this software without
-  specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-  THE POSSIBILITY OF SUCH DAMAGE.
-
+  SPDX-License-Identifier: BSD-3-Clause
 **/
 
 #ifndef _SYSTEM_INFO_HOB_H_
@@ -34,14 +13,14 @@ are permitted provided that the following conditions are met:
 #define SYSTEM_INFO_HOB_GUID          { 0x7650A0F2, 0x0D91, 0x4B0C, { 0x92, 0x3B, 0xBD, 0xCF, 0x22, 0xD1, 0x64, 0x35 }}
 
 #ifndef MAX_SOCKET
-#define MAX_SOCKET                    4
+#define MAX_SOCKET                4
 #endif
 
 #ifndef MAX_IIO_STACK
-#define MAX_IIO_STACK                 12
+#define MAX_IIO_STACK              12
 #endif
 
-#define MAX_LOGIC_IIO_STACK           14
+#define MAX_LOGIC_IIO_STACK        14
 
 #ifndef MAX_IMC
 #define MAX_IMC                       4                     // Maximum memory controllers per socket

@@ -3,6 +3,7 @@
 #include <console/console.h>
 #include <fsp/util.h>
 #include <lib.h>
+#include <IioPcieConfigUpd.h>
 
 #define DUMP_UPD(old, new, field)                                                              \
 	fsp_display_upd_value(#field, sizeof(old->field), old->field, new->field)

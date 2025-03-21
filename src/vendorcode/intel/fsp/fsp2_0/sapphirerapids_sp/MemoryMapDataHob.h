@@ -1,31 +1,10 @@
 /** @file
+  GUID used for Memory Map Data entries in the HOB list.
 
-Copyright (c) 2019-2023, Intel Corporation. All rights reserved.<BR>
+  @copyright
+  Copyright 1999 - 2022 Intel Corporation. <BR>
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright notice, this
-  list of conditions and the following disclaimer in the documentation and/or
-  other materials provided with the distribution.
-* Neither the name of Intel Corporation nor the names of its contributors may
-  be used to endorse or promote products derived from this software without
-  specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-  THE POSSIBILITY OF SUCH DAMAGE.
-
+  SPDX-License-Identifier: BSD-3-Clause
 **/
 
 #ifndef _MEMORY_MAP_DATA_HOB_H_
@@ -41,33 +20,33 @@ are permitted provided that the following conditions are met:
 #endif
 
 #ifndef MAX_IMC
-#define MAX_IMC                          4                     // Maximum memory controllers per socket
+#define MAX_IMC                       4                     // Maximum memory controllers per socket
 #endif
 
 #ifndef MAX_MC_CH
-#define MAX_MC_CH                        2                     // Max number of channels per MC (3 for EP)
+#define MAX_MC_CH                     2                     // Max number of channels per MC (3 for EP)
 #endif
 
 #ifndef MAX_CH
-#define MAX_CH                           ((MAX_IMC)*(MAX_MC_CH))     // Max channels per socket (worst case EP * EX combination = 16)
+#define MAX_CH                        ((MAX_IMC)*(MAX_MC_CH))     // Max channels per socket (worst case EP * EX combination = 16)
 #endif
 
-#define MAX_CXL_AMT                       0
+#define MAX_CXL_AMT          0
 
 #ifndef MAX_UNIQUE_NGN_DIMM_INTERLEAVE
-#define MAX_UNIQUE_NGN_DIMM_INTERLEAVE    2                         // Max number of unique interleaves for NGN DIMM
+#define MAX_UNIQUE_NGN_DIMM_INTERLEAVE 2                         // Max number of unique interleaves for NGN DIMM
 #endif
 
 #ifndef MAX_SPARE_RANK
-#define MAX_SPARE_RANK                    2             // Max number of spare ranks in a channel
+#define MAX_SPARE_RANK              2             // Max number of spare ranks in a channel
 #endif
 
 #ifndef MAX_HBM_IO
-#define MAX_HBM_IO                        4
+#define MAX_HBM_IO                                4
 #endif
 
 #ifndef MAX_DIMM
-#define MAX_DIMM                          2                       // Max DIMM per channel
+#define MAX_DIMM                      2                       // Max DIMM per channel
 #endif
 
 #ifndef MAX_RANK_DIMM
@@ -86,17 +65,17 @@ are permitted provided that the following conditions are met:
 #define MAX_FPGA_REMOTE_SAD_RULES         2     // Maximum FPGA sockets exists on ICX platform
 #endif
 
-#define MAX_SI_SOCKET                     8   // Maximum silicon supported socket number
+#define     MAX_SI_SOCKET        8   // Maximum silicon supported socket number
 
-#define MAX_AMT                           (MAX_IMC+MAX_CXL_AMT)      // Max abstract memory target per socket
-#define AMT_MAX_NODE                      ((MAX_AMT)*(MAX_SOCKET))   // Max abstract memory target for all sockets
+#define MAX_AMT             (MAX_IMC+MAX_CXL_AMT)      // Max abstract memory target per socket
+#define AMT_MAX_NODE        ((MAX_AMT)*(MAX_SOCKET))   // Max abstract memory target for all sockets
 
 // NGN
-#define NGN_MAX_SERIALNUMBER_STRLEN       4
-#define NGN_MAX_PARTNUMBER_STRLEN         30
-#define NGN_FW_VER_LEN                    4
-#define NGN_LOG_TYPE_NUM                  2
-#define NGN_LOG_LEVEL_NUM                 2
+#define NGN_MAX_SERIALNUMBER_STRLEN      4
+#define NGN_MAX_PARTNUMBER_STRLEN        30
+#define NGN_FW_VER_LEN                   4
+#define NGN_LOG_TYPE_NUM      2
+#define NGN_LOG_LEVEL_NUM     2
 
 /**
  * Memory channel index conversion macros.
@@ -120,12 +99,12 @@ are permitted provided that the following conditions are met:
 
 typedef UINT8               CXL_INTLV_SET_KEY;
 
-#define FSP_RESERVED1_LEN                 77
-#define FSP_RESERVED2_LEN                 2174
-#define FSP_RESERVED3_LEN                 21
-#define FSP_RESERVED4_LEN                 130
-#define FSP_RESERVED5_LEN                 10
-#define FSP_RESERVED6_LEN                 800
+#define FSP_RESERVED1_LEN		77
+#define FSP_RESERVED2_LEN		2217
+#define FSP_RESERVED3_LEN		21
+#define FSP_RESERVED4_LEN		160
+#define FSP_RESERVED5_LEN		10
+#define FSP_RESERVED6_LEN		800
 #pragma pack(1)
 
 typedef enum {
@@ -302,7 +281,7 @@ typedef struct SystemMemoryMapHob {
   //
   UINT8    TotalClusters;
 
-  UINT8    reserved1[FSP_RESERVED1_LEN];          // MEMORY_MAP_BLOCK_DECODER_DATA BlockDecoderData; // block decoder data structure
+  UINT8    reserved1[FSP_RESERVED1_LEN];        // MEMORY_MAP_BLOCK_DECODER_DATA BlockDecoderData; // block decoder data structure
   UINT32   lowMemBase;                            // Mem base in 64MB units for below 4GB mem.
   UINT32   lowMemSize;                            // Mem size in 64MB units for below 4GB mem.
   UINT32   highMemBase;                           // Mem base in 64MB units for above 4GB mem.
@@ -337,18 +316,18 @@ typedef struct SystemMemoryMapHob {
   UINT8    NumChPerMC;
   UINT8    numberEntries;                         // Number of Memory Map Elements
   SYSTEM_MEMORY_MAP_ELEMENT Element[(MAX_SOCKET * MAX_DRAM_CLUSTERS * MAX_SAD_RULES) + MAX_FPGA_REMOTE_SAD_RULES];
-  UINT8   reserved2[FSP_RESERVED2_LEN];                // struct   memSetup MemSetup;
-  UINT8   reserved3[FSP_RESERVED3_LEN];                // MEM_DFXMEMVARS    DfxMemVar;
+  UINT8    reserved2[FSP_RESERVED2_LEN];        // struct   memSetup MemSetup;
+  UINT8    reserved3[FSP_RESERVED3_LEN];        // MEM_DFXMEMVARS    DfxMemVar;
   MEMMAP_SOCKET Socket[MAX_SOCKET];
-  UINT8   reserved4[FSP_RESERVED4_LEN];                // struct   memTiming  profileMemTime[XMP_MAX_PROFILES];
+  UINT8    reserved4[FSP_RESERVED4_LEN];        // struct   memTiming  profileMemTime[XMP_MAX_PROFILES];
 
-  UINT8   reserved5[FSP_RESERVED5_LEN];                // RASMEMORYINFO  RasMeminfo;
+  UINT8    reserved5[FSP_RESERVED5_LEN];        // RASMEMORYINFO  RasMeminfo;
   UINT8   LatchSystemShutdownState;
   BOOLEAN IsWpqFlushSupported;
   UINT8   EadrSupport;
   UINT8   EadrCacheFlushMode;
   UINT8   SetSecureEraseSktChHob[MAX_SOCKET][MAX_CH];  //MAX_CH * MAX_SOCKET * MAX_DCPMM_CH
-  UINT8   reserved6[FSP_RESERVED6_LEN];                // HOST_DDRT_DIMM_DEVICE_INFO_STRUCT HostDdrtDimmInfo[MAX_SOCKET][MAX_CH];
+  UINT8    reserved6[FSP_RESERVED6_LEN];        // HOST_DDRT_DIMM_DEVICE_INFO_STRUCT HostDdrtDimmInfo[MAX_SOCKET][MAX_CH];
   UINT32  DdrCacheSize[MAX_SOCKET][MAX_CH];            // Size of DDR memory reserved for 2LM cache (64MB granularity)
   BOOLEAN AdrStateForPmemModule[MAX_SOCKET][MAX_CH];   // ADR state for Intel PMEM Modules
   UINT16  BiosFisVersion;                              // Firmware Interface Specification version currently supported by BIOS
