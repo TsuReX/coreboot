@@ -1,0 +1,4 @@
+## SPDX-License-Identifier: GPL-2.0-only
+
+config BOARD_OPENYARD_MOSCOWCITY
+	bool "OpenYard Gen4"

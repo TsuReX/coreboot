@@ -1,6 +1,6 @@
 ## SPDX-License-Identifier: GPL-2.0-only
 
-if BOARD_INTEL_ARCHERCITY_CRB
+if BOARD_OPENYARD_MOSCOWCITY
 
 config BOARD_SPECIFIC_OPTIONS
 	def_bool y
@@ -25,11 +25,11 @@ config BOARD_SPECIFIC_OPTIONS
 
 config MAINBOARD_DIR
 	string
-	default "intel/archercity_crb"
+	default "openyard/moscowcity"
 
 config MAINBOARD_PART_NUMBER
 	string
-	default "Archer City CRB"
+	default "OpenYard Gen4"
 
 config FMDFILE
 	string
