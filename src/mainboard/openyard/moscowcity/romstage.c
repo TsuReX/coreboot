@@ -9,6 +9,13 @@
 #include <defs_iio.h>
 #include <sprsp_ac_iio.h>
 
+#include <efivars.h>
+#include <types.h>
+#include <fmap.h>
+
+#define VAR_SIZE 0x10
+
+
 static void setup_gpio(void) {
 #define PID_GPIOCOM0   0x6E
 #define PID_GPIOCOM1   0x6D
@@ -84,8 +91,32 @@ static void mainboard_config_iio(FSPM_UPD *mupd)
 	}
 }
 
+
+static void read_variable (void) {
+    const char var_name[] = "Timeout";
+    uint32_t var_size = VAR_SIZE;
+    uint8_t var_data[VAR_SIZE];
+    struct region_device smmstore;
+
+    const EFI_GUID EfiVariableGuid =	{0x8BE4DF61, 0x93CA, 0x11d2,
+					{0xAA, 0x0D, 0x00, 0xE0, 0x98, 0x03, 0x2B, 0x8C} };
+
+    if (fmap_locate_area_as_rdev("SMMSTORE", &smmstore) < 0) { // src/lib/fmap.c
+	printk(BIOS_ERR, "SMMSTORE region wasn't found \n");
+	return;
+    }
+
+    enum cb_err error = efi_fv_get_option(&smmstore, &EfiVariableGuid, var_name, &var_data, &var_size);
+    if (error != 0) {
+	printk(BIOS_ERR, "EFI variable can't be gotten, error: %d\n", error);
+	return;
+    }
+    printk(BIOS_ERR, "Timeout: 0x%02X, size: %d\n", *(uint16_t*)&var_data, var_size);
+}
+
 void mainboard_memory_init_params(FSPM_UPD *mupd)
 {
+	read_variable();
 	/* Setup FSP log */
 	if (CONFIG(OCP_VPD)) {
 		mupd->FspmConfig.SerialIoUartDebugEnable = get_bool_from_vpd(FSP_LOG,
