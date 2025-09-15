@@ -11,18 +11,11 @@ void mainboard_memory_init_params(FSPM_UPD *mupd)
 		.type = MEM_TYPE_DDR5,
 		.ect = true,
 		.UserBd = BOARD_TYPE_ULT_ULX,
-		.ddr_config = {
-			.dq_pins_interleaved = false,
-		},
-		.rcomp = {
-			.resistor = 100,
-			.targets = {70, 30, 25, 25, 25},
-		}
 	};
 
 	const bool half_populated = false;
 
-	const struct mem_spd ddr4_spd_info = {
+	const struct mem_spd ddr5_spd_info = {
 		.topo = MEM_TOPO_DIMM_MODULE,
 		.smbus = {
 			[0] = {
@@ -34,7 +27,7 @@ void mainboard_memory_init_params(FSPM_UPD *mupd)
 		},
 	};
 
-	memcfg_init(mupd, &mem_config, &ddr4_spd_info, half_populated);
+	memcfg_init(mupd, &mem_config, &ddr5_spd_info, half_populated);
 
 	const uint8_t vtd = get_uint_option("vtd", 1);
 	mupd->FspmConfig.VtdDisable = !vtd;
@@ -44,5 +37,5 @@ void mainboard_memory_init_params(FSPM_UPD *mupd)
 		mupd->FspmConfig.PcieRpEnableMask &= ~(1 << 8);
 
 	mupd->FspmConfig.PchHdaSubSystemIds = 0x70381e50;
-	mupd->FspmConfig.MmioSize = 0xb00;
+	mupd->FspmConfig.PsysPmax = 0;
 };

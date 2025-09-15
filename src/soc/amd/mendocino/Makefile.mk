@@ -11,6 +11,7 @@ all-y		+= i2c.c
 
 # all_x86-y adds the compilation unit to all stages that run on the x86 cores
 all_x86-y	+= gpio.c
+all_x86-y	+= i3c.c
 all_x86-y	+= uart.c
 
 bootblock-y	+= early_fch.c
@@ -157,12 +158,8 @@ PSP_VERSTAGE_SIG_FILE=$(call strip_quotes,$(CONFIG_PSP_VERSTAGE_SIGNING_TOKEN))
 endif # CONFIG_VBOOT_STARTS_BEFORE_BOOTBLOCK
 
 ifeq ($(CONFIG_SEPARATE_SIGNED_PSPFW),y)
-SIGNED_AMDFW_A_POSITION=$(call int-subtract, \
-	$(call get_fmap_value,FMAP_SECTION_SIGNED_AMDFW_A_START) \
-	$(call get_fmap_value,FMAP_SECTION_FLASH_START))
-SIGNED_AMDFW_B_POSITION=$(call int-subtract, \
-	$(call get_fmap_value,FMAP_SECTION_SIGNED_AMDFW_B_START) \
-	$(call get_fmap_value,FMAP_SECTION_FLASH_START))
+SIGNED_AMDFW_A_POSITION=$(call get_fmap_value,FMAP_SECTION_SIGNED_AMDFW_A_START)
+SIGNED_AMDFW_B_POSITION=$(call get_fmap_value,FMAP_SECTION_SIGNED_AMDFW_B_START)
 SIGNED_AMDFW_A_FILE=$(obj)/amdfw_a.rom.body.signed
 SIGNED_AMDFW_B_FILE=$(obj)/amdfw_b.rom.body.signed
 endif # CONFIG_SEPARATE_SIGNED_PSPFW

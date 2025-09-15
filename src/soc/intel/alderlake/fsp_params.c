@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <assert.h>
+#include <boot/coreboot_tables.h>
 #include <bootmode.h>
 #include <bootsplash.h>
 #include <console/console.h>
@@ -517,6 +518,9 @@ static uint16_t get_vccin_aux_imon_iccmax(const struct soc_intel_alderlake_confi
 	case PCI_DID_INTEL_ADL_S_ID_10:
 	case PCI_DID_INTEL_ADL_S_ID_11:
 	case PCI_DID_INTEL_ADL_S_ID_12:
+	case PCI_DID_INTEL_ASL_ID_1:
+	case PCI_DID_INTEL_ASL_ID_2:
+	case PCI_DID_INTEL_ASL_ID_3:
 	case PCI_DID_INTEL_RPL_HX_ID_1:
 	case PCI_DID_INTEL_RPL_HX_ID_2:
 	case PCI_DID_INTEL_RPL_HX_ID_3:
@@ -650,6 +654,13 @@ static void fill_fsps_tcss_params(FSP_S_CONFIG *s_cfg,
 			s_cfg->UsbTcPortEn |= BIT(i);
 	}
 
+	for (int i = 0; i < MAX_TYPE_C_PORTS; i++) {
+		if (config->enabletcsscovtypea[i]) {
+			s_cfg->EnableTcssCovTypeA[i] = config->enabletcsscovtypea[i];
+			s_cfg->MappingPchXhciUsbA[i] = config->mappingpchxhciusba[i];
+		}
+	}
+
 	s_cfg->Usb4CmMode = CONFIG(SOFTWARE_CONNECTION_MANAGER);
 }
 
@@ -660,7 +671,7 @@ static void fill_fsps_chipset_lockdown_params(FSP_S_CONFIG *s_cfg,
 	const bool lockdown_by_fsp = get_lockdown_config() == CHIPSET_LOCKDOWN_FSP;
 	s_cfg->PchLockDownGlobalSmi = lockdown_by_fsp;
 	s_cfg->PchLockDownBiosInterface = lockdown_by_fsp;
-	s_cfg->PchUnlockGpioPads = lockdown_by_fsp;
+	s_cfg->PchUnlockGpioPads = !lockdown_by_fsp;
 	s_cfg->RtcMemoryLock = lockdown_by_fsp;
 	s_cfg->SkipPamLock = !lockdown_by_fsp;
 
@@ -922,7 +933,7 @@ static void fill_fsps_pcie_params(FSP_S_CONFIG *s_cfg,
 	}
 	s_cfg->PcieComplianceTestMode = CONFIG(SOC_INTEL_COMPLIANCE_TEST_MODE);
 
-#if CONFIG(FSP_TYPE_IOT) && !CONFIG(SOC_INTEL_ALDERLAKE_PCH_N)
+#if CONFIG(FSP_TYPE_IOT)
 	/*
 	 * Intel requires that all enabled PCH PCIe ports have a CLK_REQ signal connected.
 	 * The CLK_REQ is used to wake the silicon when link entered L1 link-state. L1
@@ -1003,8 +1014,8 @@ static void fill_fsps_misc_power_params(FSP_S_CONFIG *s_cfg,
 	s_cfg->PsOnEnable = 1;
 	s_cfg->PkgCStateLimit = LIMIT_AUTO;
 
-	/* Disable Energy Efficient Turbo mode */
-	s_cfg->EnergyEfficientTurbo = 0;
+	/* Set Energy Efficient Turbo mode */
+	s_cfg->EnergyEfficientTurbo = config->energy_efficient_turbo;
 
 	/* VccIn Aux Imon IccMax. Values are in 1/4 Amp increments and range is 0-512. */
 	s_cfg->VccInAuxImonIccImax =
@@ -1238,6 +1249,9 @@ static void soc_silicon_init_params(FSP_S_CONFIG *s_cfg,
 	/* Override settings per board if required. */
 	mainboard_update_soc_chip_config(config);
 
+	/* Runtime configuration of S0ix */
+	config->s0ix_enable = get_uint_option("s0ix_enable", config->s0ix_enable);
+
 	void (*const fill_fsps_params[])(FSP_S_CONFIG *s_cfg,
 			const struct soc_intel_alderlake_config *config) = {
 		fill_fsps_lpss_params,
@@ -1367,12 +1381,27 @@ __weak void mainboard_silicon_init_params(FSP_S_CONFIG *s_cfg)
 }
 
 /* Handle FSP logo params */
-void soc_load_logo(FSPS_UPD *supd)
+void soc_load_logo_by_fsp(FSPS_UPD *supd)
 {
-	fsp_convert_bmp_to_gop_blt(&supd->FspsConfig.LogoPtr,
+	struct soc_intel_common_config *config = chip_get_common_soc_structure();
+	FSP_S_CONFIG *s_cfg = &supd->FspsConfig;
+
+	/*
+	 * Adjusts panel orientation for external display when the lid is closed.
+	 *
+	 * When the lid is closed (LidStatus == 0), indicating the onboard display is inactive,
+	 * this function forces the panel orientation to normal. This ensures proper display
+	 * on an external monitor, as rotated orientations are typically not suitable in
+	 * such state.
+	 */
+	if (s_cfg->LidStatus == 0)
+		config->panel_orientation = LB_FB_ORIENTATION_NORMAL;
+
+	fsp_load_and_convert_bmp_to_gop_blt(&supd->FspsConfig.LogoPtr,
 			 &supd->FspsConfig.LogoSize,
 			 &supd->FspsConfig.BltBufferAddress,
 			 &supd->FspsConfig.BltBufferSize,
 			 &supd->FspsConfig.LogoPixelHeight,
-			 &supd->FspsConfig.LogoPixelWidth);
+			 &supd->FspsConfig.LogoPixelWidth,
+			 config->panel_orientation);
 }

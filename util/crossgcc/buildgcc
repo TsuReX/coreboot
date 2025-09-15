@@ -47,6 +47,9 @@ CLANG_VERSION=18.1.8
 CMAKE_VERSION=3.31.3
 NASM_VERSION=2.16.03
 
+# Architecture-specific options
+RISCV_ISA_SPEC=20191213
+
 # Filename for each package
 GMP_ARCHIVE="gmp-${GMP_VERSION}.tar.xz"
 MPFR_ARCHIVE="mpfr-${MPFR_VERSION}.tar.xz"
@@ -654,7 +657,9 @@ build_GMP() {
 	fi
 
 	# shellcheck disable=SC2086
-	CC="$(hostcc host)" CXX="$(hostcxx host)" \
+	# Bug: GMP currently does not support being build by GCC 15 (--std=gnu23)
+	#      Remove CFLAGS once it works again.
+	CC="$(hostcc host)" CXX="$(hostcxx host)" CFLAGS="-std=gnu17" \
 	../${GMP_DIR}/configure \
 		--disable-shared \
 		--enable-fat \
@@ -1040,8 +1045,8 @@ case "$TARGETARCH" in
 	i386-mingw32)		;;
 	riscv-elf | riscv64-elf)
 				TARGETARCH=riscv64-elf
-				TARGET_GCC_OPTIONS="$TARGET_GCC_OPTIONS --with-isa-spec=20191213"
-				TARGET_BINUTILS_OPTIONS="$TARGET_BINUTILS_OPTIONS --with-isa-spec=20191213";;
+				TARGET_GCC_OPTIONS="$TARGET_GCC_OPTIONS --with-isa-spec=${RISCV_ISA_SPEC}"
+				TARGET_BINUTILS_OPTIONS="$TARGET_BINUTILS_OPTIONS --with-isa-spec=${RISCV_ISA_SPEC}";;
 	powerpc64*-linux*)	;;
 	i386*)			TARGETARCH=i386-elf;;
 	arm*)			TARGETARCH=arm-eabi;;

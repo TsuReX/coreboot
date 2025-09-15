@@ -473,7 +473,7 @@ $(obj)/project_filelist.txt:
 		echo "*** Error: Project must be built before generating file list ***"; \
 		exit 1; \
 	fi
-	find $(obj) -path "$(obj)/util" -prune -o -path "$(obj)/external" -prune -o -name "*.d" -exec cat {} \; | \
+	find $(obj) -path "$(obj)/util" -prune -o -path "$(obj)/external" -prune -o -path "$(obj)/3rdparty" -prune -o -name "*.d" -exec cat {} \; | \
 	  sed "s|$(top)/||" | sed 's/[:\\]/ /g' | sed 's/ /\n/g' | sort | uniq | \
 	  grep -v '\.o$$' > $(obj)/project_filelist.txt
 
@@ -485,6 +485,9 @@ filelist: $(obj)/project_filelist.txt
 ctags-project: clean-ctags $(obj)/project_filelist.txt
 	cat $(obj)/project_filelist.txt | \
 	  xargs ctags -o tags
+
+ctags:
+	ctags -R
 
 cscope-project: clean-cscope $(obj)/project_filelist.txt
 	cat $(obj)/project_filelist.txt | xargs cscope -b

@@ -3,7 +3,7 @@ ifeq ($(CONFIG_SOC_MEDIATEK_MT8188),y)
 
 all-y += ../common/flash_controller.c
 all-y += ../common/gpio_eint_v1.c ../common/gpio.c ../common/gpio_op.c gpio.c
-all-y += ../common/i2c.c i2c.c
+all-y += ../common/i2c.c ../common/i2c_common.c i2c.c
 all-y += ../common/pll.c pll.c
 all-$(CONFIG_SPI_FLASH) += ../common/spi.c spi.c
 all-y += timer.c ../common/timer_prepare.c
@@ -39,8 +39,10 @@ ramstage-y += ../common/ddp.c ddp.c
 ramstage-y += ../common/devapc.c devapc.c
 ramstage-y += ../common/dfd.c
 ramstage-y += ../common/display.c
-ramstage-y += ../common/dp/dptx_common.c ../common/dp/dptx_hal_common.c
-ramstage-y += ../common/dp/dp_intf.c ../common/dp/dptx.c ../common/dp/dptx_hal.c dp_intf.c
+ramstage-y += ../common/dp/dp_intf_v1.c dp_intf.c
+ramstage-y += ../common/dp/dptx_common.c ../common/dp/dptx_v1.c
+ramstage-y += ../common/dp/dptx_hal_common.c ../common/dp/dptx_hal_v1.c
+ramstage-y += ../common/dpm.c
 ramstage-y += ../common/dpm_v1.c
 ramstage-$(CONFIG_DPM_FOUR_CHANNEL) += ../common/dpm_4ch.c
 ramstage-y += ../common/dsi.c ../common/mtk_mipi_dphy.c
@@ -91,6 +93,6 @@ $(DRAM_CBFS)-compression := $(CBFS_PRERAM_COMPRESS_FLAG)
 cbfs-files-y += $(DRAM_CBFS)
 
 $(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw.bin
-	./util/mtkheader/gen-bl-img.py mt8183 sf $< $@
+	./util/mediatek/gen-bl-img.py mt8183 sf $< $@
 
 endif

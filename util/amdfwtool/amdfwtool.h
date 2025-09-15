@@ -9,6 +9,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/* An address can be relative to the image/file start but it can also be the address when
+ * the image is mapped at 0xff000000. Used to ensure that we only attempt to read within
+ * the limits of the file. */
+#define SPI_ROM_BASE 0xff000000
+
 #define ERASE_ALIGNMENT 0x1000U
 #define TABLE_ALIGNMENT 0x1000U
 #define TABLE_L2_SIZE_MAX 0x400U
@@ -29,6 +34,7 @@ enum platform {
 	PLATFORM_PHOENIX,
 	PLATFORM_GLINDA,
 	PLATFORM_GENOA,
+	PLATFORM_FAEGAN,
 };
 
 typedef enum _amd_fw_type {

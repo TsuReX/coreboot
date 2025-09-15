@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
+#include <boot/coreboot_tables.h>
 #include <bootmode.h>
 #include <cpu/intel/microcode.h>
 #include <fsp/api.h>
@@ -118,6 +119,7 @@ static const struct slot_irq_constraints irq_constraints[] = {
 			FIXED_INT_PIRQ(PCI_DEVFN_DPTF, PCI_INT_A, PIRQ_A),
 		},
 	},
+#if CONFIG(SOC_INTEL_PANTHERLAKE)
 	{
 		.slot = PCI_DEV_SLOT_IPU,
 		.fns = {
@@ -126,14 +128,20 @@ static const struct slot_irq_constraints irq_constraints[] = {
 			FIXED_INT_PIRQ(PCI_DEVFN_IPU, PCI_INT_A, PIRQ_A),
 		},
 	},
+#endif
 	{
 		.slot = PCI_DEV_SLOT_PCIE_2,
 		.fns = {
+#if CONFIG(SOC_INTEL_WILDCATLAKE)
+			FIXED_INT_PIRQ(PCI_DEVFN_PCIE5, PCI_INT_A, PIRQ_A),
+			FIXED_INT_PIRQ(PCI_DEVFN_PCIE6, PCI_INT_B, PIRQ_B),
+#else
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE9, PCI_INT_A, PIRQ_A),
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE10, PCI_INT_B, PIRQ_B),
 #if CONFIG(SOC_INTEL_PANTHERLAKE_H)
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE11, PCI_INT_C, PIRQ_C),
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE12, PCI_INT_D, PIRQ_D),
+#endif
 #endif
 		},
 	},
@@ -142,8 +150,10 @@ static const struct slot_irq_constraints irq_constraints[] = {
 		.fns = {
 			ANY_PIRQ(PCI_DEVFN_TBT0),
 			ANY_PIRQ(PCI_DEVFN_TBT1),
+#if CONFIG(SOC_INTEL_PANTHERLAKE)
 			ANY_PIRQ(PCI_DEVFN_TBT2),
 			ANY_PIRQ(PCI_DEVFN_TBT3),
+#endif
 		},
 	},
 	{
@@ -200,7 +210,7 @@ static const struct slot_irq_constraints irq_constraints[] = {
 			ANY_PIRQ(PCI_DEVFN_CSE_4),
 		},
 	},
-#if CONFIG(SOC_INTEL_PANTHERLAKE_U_H)
+#if (CONFIG(SOC_INTEL_PANTHERLAKE_U_H) || CONFIG(SOC_INTEL_WILDCATLAKE))
 	{
 		.slot = PCI_DEV_SLOT_UFS,
 		.fns = {
@@ -223,10 +233,12 @@ static const struct slot_irq_constraints irq_constraints[] = {
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE2, PCI_INT_B, PIRQ_B),
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE3, PCI_INT_C, PIRQ_C),
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE4, PCI_INT_D, PIRQ_D),
+#if CONFIG(SOC_INTEL_PANTHERLAKE)
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE5, PCI_INT_A, PIRQ_A),
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE6, PCI_INT_B, PIRQ_B),
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE7, PCI_INT_C, PIRQ_C),
 			FIXED_INT_PIRQ(PCI_DEVFN_PCIE8, PCI_INT_D, PIRQ_D),
+#endif
 		},
 	},
 	{
@@ -575,8 +587,15 @@ static void fill_fsps_pmcpd_params(FSP_S_CONFIG *s_cfg,
 static void fill_fsps_thc_params(FSP_S_CONFIG *s_cfg,
 				 const struct soc_intel_pantherlake_config *config)
 {
-	s_cfg->ThcAssignment[0] = is_devfn_enabled(PCI_DEVFN_THC0) ? THC_0 : THC_NONE;
-	s_cfg->ThcAssignment[1] = is_devfn_enabled(PCI_DEVFN_THC1) ? THC_1 : THC_NONE;
+	for (size_t i = 0; i < NUM_THC; i++) {
+		if (!is_devfn_enabled(_PCI_DEVFN(THC, i))) {
+			s_cfg->ThcAssignment[i] = THC_NONE;
+			continue;
+		}
+		s_cfg->ThcAssignment[i] = THC_0 + i;
+		s_cfg->ThcMode[i] = config->thc_mode[i];
+		s_cfg->ThcWakeOnTouch[i] = config->thc_wake_on_touch[i];
+	}
 }
 
 static void fill_fsps_8254_params(FSP_S_CONFIG *s_cfg,
@@ -676,7 +695,7 @@ static void fill_fsps_iax_params(FSP_S_CONFIG *s_cfg,
 static void fill_fsps_ufs_params(FSP_S_CONFIG *s_cfg,
 		const struct soc_intel_pantherlake_config *config)
 {
-#if CONFIG(SOC_INTEL_PANTHERLAKE_U_H)
+#if (CONFIG(SOC_INTEL_PANTHERLAKE_U_H) || CONFIG(SOC_INTEL_WILDCATLAKE))
 	/* Setting FSP UPD (1,0) to enable controller 0 */
 	s_cfg->UfsEnable[0] = is_devfn_enabled(PCI_DEVFN_UFS);
 	s_cfg->UfsEnable[1] = 0;
@@ -781,14 +800,28 @@ __weak void mainboard_silicon_init_params(FSP_S_CONFIG *s_cfg)
 }
 
 /* Handle FSP logo params */
-void soc_load_logo(FSPS_UPD *supd)
+void soc_load_logo_by_fsp(FSPS_UPD *supd)
 {
 	efi_uintn_t logo, blt_size;
 	uint32_t logo_size;
+	struct soc_intel_common_config *config = chip_get_common_soc_structure();
+	FSP_S_CONFIG *s_cfg = &supd->FspsConfig;
 
-	fsp_convert_bmp_to_gop_blt(&logo, &logo_size,
+	/*
+	 * Adjusts panel orientation for external display when the lid is closed.
+	 *
+	 * When the lid is closed (LidStatus == 0), indicating the onboard display is inactive,
+	 * this function forces the panel orientation to normal. This ensures proper display
+	 * on an external monitor, as rotated orientations are typically not suitable in
+	 * such state.
+	 */
+	if (s_cfg->LidStatus == 0)
+		config->panel_orientation = LB_FB_ORIENTATION_NORMAL;
+
+	fsp_load_and_convert_bmp_to_gop_blt(&logo, &logo_size,
 				   &supd->FspsConfig.BltBufferAddress,
 				   &blt_size,
 				   &supd->FspsConfig.LogoPixelHeight,
-				   &supd->FspsConfig.LogoPixelWidth);
+				   &supd->FspsConfig.LogoPixelWidth,
+				   config->panel_orientation);
 }

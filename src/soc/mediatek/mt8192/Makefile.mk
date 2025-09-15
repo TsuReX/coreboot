@@ -38,6 +38,7 @@ ramstage-$(CONFIG_ARM64_USE_ARM_TRUSTED_FIRMWARE) += ../common/bl31.c
 ramstage-y += ../common/ddp.c ddp.c
 ramstage-y += devapc.c
 ramstage-y += ../common/dfd.c
+ramstage-y += ../common/dpm.c
 ramstage-y += ../common/dpm_v1.c
 ramstage-y += ../common/dsi.c ../common/mtk_mipi_dphy.c
 ramstage-y += ../common/l2c_ops.c
@@ -83,6 +84,6 @@ $(DRAM_CBFS)-compression := $(CBFS_PRERAM_COMPRESS_FLAG)
 cbfs-files-y += $(DRAM_CBFS)
 
 $(objcbfs)/bootblock.bin: $(objcbfs)/bootblock.raw.bin
-	./util/mtkheader/gen-bl-img.py mt8183 sf $< $@
+	./util/mediatek/gen-bl-img.py mt8183 sf $< $@
 
 endif

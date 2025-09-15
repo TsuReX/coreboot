@@ -631,6 +631,7 @@ static void fill_psp_directory_to_efs(embedded_firmware *amd_romsig, void *pspdi
 	case PLATFORM_LUCIENNE:
 	case PLATFORM_RENOIR:
 	case PLATFORM_GENOA:
+	case PLATFORM_FAEGAN:
 	default:
 		/* for combo, it is also combo_psp_directory */
 		amd_romsig->new_psp_directory =
@@ -662,6 +663,7 @@ static void fill_bios_directory_to_efs(embedded_firmware *amd_romsig, void *bios
 	case PLATFORM_MENDOCINO:
 	case PLATFORM_PHOENIX:
 	case PLATFORM_GLINDA:
+	case PLATFORM_FAEGAN:
 		break;
 	case PLATFORM_CARRIZO:
 	case PLATFORM_STONEYRIDGE:
@@ -703,6 +705,9 @@ static uint32_t get_psp_id(enum platform soc_id)
 		break;
 	case PLATFORM_GENOA:
 		psp_id = 0xBC0C0111;
+		break;
+	case PLATFORM_FAEGAN:
+		psp_id = 0xbc0e1000;
 		break;
 	case PLATFORM_CARRIZO:
 	default:
@@ -1162,20 +1167,20 @@ static void *new_bios_dir(context *ctx, bool multi, uint32_t cookie)
 	return ptr;
 }
 
-static int locate_bdt2_bios(bios_directory_table *level2,
+static int locate_bdt_bios(bios_directory_table *level,
 					uint64_t *source, uint32_t *size)
 {
 	uint32_t i;
 
 	*source = 0;
 	*size = 0;
-	if (!level2)
+	if (!level)
 		return 0;
 
-	for (i = 0 ; i < level2->header.num_entries ; i++) {
-		if (level2->entries[i].type == AMD_BIOS_BIN) {
-			*source = level2->entries[i].source;
-			*size = level2->entries[i].size;
+	for (i = 0 ; i < level->header.num_entries ; i++) {
+		if (level->entries[i].type == AMD_BIOS_BIN) {
+			*source = level->entries[i].source;
+			*size = level->entries[i].size;
 			return 1;
 		}
 	}
@@ -1405,28 +1410,15 @@ static void integrate_bios_firmwares(context *ctx,
 			biosdir->entries[count].address_mode = SET_ADDR_MODE_BY_TABLE(biosdir);
 			break;
 		case AMD_BIOS_APOB_NV:
-			if (fw_table[i].src) {
-				/* If source is given, use that and its size */
-				biosdir->entries[count].source = fw_table[i].src;
-				biosdir->entries[count].address_mode =
-						SET_ADDR_MODE(biosdir, AMD_ADDR_REL_BIOS);
-				biosdir->entries[count].size = fw_table[i].size;
-			} else {
-				/* Else reserve size bytes within amdfw.rom */
-				adjust_current_pointer(ctx, 0, ERASE_ALIGNMENT);
-				biosdir->entries[count].source = RUN_CURRENT(*ctx);
-				biosdir->entries[count].address_mode =
-						SET_ADDR_MODE(biosdir, AMD_ADDR_REL_BIOS);
-				biosdir->entries[count].size = ALIGN_UP(
-						fw_table[i].size, ERASE_ALIGNMENT);
-				memset(BUFF_CURRENT(*ctx), 0xff,
-						biosdir->entries[count].size);
-				adjust_current_pointer(ctx, biosdir->entries[count].size, 1);
-			}
+			biosdir->entries[count].source = fw_table[i].src;
+			biosdir->entries[count].address_mode =
+					SET_ADDR_MODE(biosdir, AMD_ADDR_REL_BIOS);
+			biosdir->entries[count].size = fw_table[i].size;
 			break;
 		case AMD_BIOS_BIN:
 			/* Don't make a 2nd copy, point to the same one */
-			if (level == BDT_LVL1 && locate_bdt2_bios(ctx->biosdir2, &source, &size)) {
+			if ((level == BDT_LVL1 && locate_bdt_bios(ctx->biosdir2, &source, &size)) ||
+				(level == BDT_LVL2 && locate_bdt_bios(ctx->biosdir, &source, &size))) {
 				biosdir->entries[count].source = source;
 				biosdir->entries[count].address_mode =
 						SET_ADDR_MODE(biosdir, AMD_ADDR_REL_BIOS);
@@ -1434,7 +1426,7 @@ static void integrate_bios_firmwares(context *ctx,
 				break;
 			}
 
-			/* level 2, or level 1 and no copy found in level 2 */
+			/* Level 2 and no copy found in level 1, or level 1 and no copy found in level 2 */
 			biosdir->entries[count].source = fw_table[i].src;
 			biosdir->entries[count].address_mode =
 						SET_ADDR_MODE(biosdir, AMD_ADDR_REL_BIOS);
@@ -1452,9 +1444,9 @@ static void integrate_bios_firmwares(context *ctx,
 			}
 
 			biosdir->entries[count].source =
-				RUN_CURRENT_MODE(*ctx, AMD_ADDR_REL_BIOS);
+				RUN_CURRENT(*ctx);
 			biosdir->entries[count].address_mode =
-				SET_ADDR_MODE(biosdir, AMD_ADDR_REL_BIOS);
+				SET_ADDR_MODE_BY_TABLE(biosdir);
 
 			adjust_current_pointer(ctx, bytes, 0x100U);
 			break;
@@ -1556,6 +1548,7 @@ static int set_efs_table(uint8_t soc_id, amd_cb_config *cb_config,
 	case PLATFORM_PHOENIX:
 	case PLATFORM_GLINDA:
 	case PLATFORM_GENOA:
+	case PLATFORM_FAEGAN:
 		amd_romsig->spi_readmode_f17_mod_30_3f = cb_config->efs_spi_readmode;
 		amd_romsig->spi_fastspeed_f17_mod_30_3f = cb_config->efs_spi_speed;
 		switch (cb_config->efs_spi_micron_flag) {
@@ -1614,6 +1607,7 @@ static bool is_initial_alignment_required(enum platform soc_id)
 	case PLATFORM_MENDOCINO:
 	case PLATFORM_PHOENIX:
 	case PLATFORM_GLINDA:
+	case PLATFORM_FAEGAN:
 		return false;
 	default:
 		return true;
@@ -1766,7 +1760,11 @@ int main(int argc, char **argv)
 		}
 
 		if (cb_config.multi_level) {
-			/* Do 2nd PSP directory followed by 1st */
+			/* PSP L1 */
+			if (!cb_config.combo_new_rab || ctx.combo_index == 0)
+				integrate_psp_firmwares(&ctx,
+					amd_psp_fw_table, PSP_COOKIE, &cb_config);
+			/* PSP L2 & BIOS L2 (if AB recovery) */
 			integrate_psp_firmwares(&ctx,
 						amd_psp_fw_table, PSPL2_COOKIE, &cb_config);
 			if (cb_config.recovery_ab) {
@@ -1780,9 +1778,6 @@ int main(int argc, char **argv)
 				}
 				integrate_bios_levels(&ctx, &cb_config);
 			}
-			if (!cb_config.combo_new_rab || ctx.combo_index == 0)
-				integrate_psp_firmwares(&ctx,
-					amd_psp_fw_table, PSP_COOKIE, &cb_config);
 			integrate_psp_levels(&ctx, &cb_config);
 		} else {
 			/* flat: PSP 1 cookie and no pointer to 2nd table */
@@ -1801,16 +1796,15 @@ int main(int argc, char **argv)
 
 		if (have_bios_tables(amd_bios_table) && !cb_config.recovery_ab) {
 			if (cb_config.multi_level) {
-				/* Do 2nd level BIOS directory followed by 1st */
+				integrate_bios_firmwares(&ctx,
+						amd_bios_table, BHD_COOKIE, &cb_config);
 				integrate_bios_firmwares(&ctx,
 						amd_bios_table, BHDL2_COOKIE, &cb_config);
-				integrate_bios_firmwares(&ctx,
-							amd_bios_table, BHD_COOKIE, &cb_config);
 				integrate_bios_levels(&ctx, &cb_config);
 			} else {
 				/* flat: BHD1 cookie and no pointer to 2nd table */
 				integrate_bios_firmwares(&ctx,
-							amd_bios_table, BHD_COOKIE, &cb_config);
+						amd_bios_table, BHD_COOKIE, &cb_config);
 			}
 			if (!cb_config.use_combo) {
 				fill_bios_directory_to_efs(ctx.amd_romsig_ptr, ctx.biosdir,

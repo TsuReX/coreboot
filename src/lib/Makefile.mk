@@ -291,6 +291,10 @@ postcar-y += rmodule.c
 postcar-$(CONFIG_COLLECT_TIMESTAMPS) += timestamp.c
 postcar-$(CONFIG_GENERIC_UDELAY) += timer.c
 
+all-$(CONFIG_ARCH_ARM) += io.c
+all-$(CONFIG_ARCH_ARM64) += io.c
+all-$(CONFIG_ARCH_RISCV) += io.c
+
 # Use program.ld for all the platforms which use C fo the bootblock.
 bootblock-y += program.ld
 
@@ -438,8 +442,10 @@ endef
 
 ifneq ($(CONFIG_HAVE_CUSTOM_BMP_LOGO),y)
 $(eval $(call add_bmp_logo_file_to_cbfs,CONFIG_BMP_LOGO, logo.bmp,\
-	      CONFIG_FSP2_0_LOGO_FILE_NAME))
+	      CONFIG_BMP_LOGO_FILE_NAME))
 endif
 
 $(eval $(call add_bmp_logo_file_to_cbfs,CONFIG_PLATFORM_HAS_LOW_BATTERY_INDICATOR, \
 	      low_battery.bmp,CONFIG_PLATFORM_LOW_BATTERY_INDICATOR_LOGO_PATH))
+$(eval $(call add_bmp_logo_file_to_cbfs,CONFIG_SPLASH_SCREEN_FOOTER, \
+	      footer_logo.bmp,CONFIG_SPLASH_SCREEN_FOOTER_LOGO_PATH))

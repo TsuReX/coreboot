@@ -11,6 +11,7 @@
 #include <device/pci_ids.h>
 #include <device/pci_ops.h>
 #include <intelblocks/cse.h>
+#include <intelblocks/fast_spi.h>
 #include <intelblocks/me.h>
 #include <intelblocks/pmclib.h>
 #include <intelblocks/post_codes.h>
@@ -40,6 +41,8 @@
 #define HECI_CIP_TIMEOUT_US	1000
 /* Wait up to 5 seconds for CSE to boot from RO(BP1) */
 #define CSE_DELAY_BOOT_TO_RO_MS	(5 * 1000)
+/* Wait up to 5 sec for CSE FW init to complete */
+#define CSE_FW_INIT_TIMEOUT_MS	(5 * 1000)
 
 #define SLOT_SIZE		sizeof(uint32_t)
 
@@ -263,6 +266,13 @@ bool cse_is_hfs1_cws_normal(void)
 	if (hfs1.fields.working_state == ME_HFS1_CWS_NORMAL)
 		return true;
 	return false;
+}
+
+bool cse_is_hfs1_cws_m3_no_uma(void)
+{
+	union me_hfsts1 hfs1;
+	hfs1.data = me_read_config32(PCI_ME_HFSTS1);
+	return hfs1.fields.working_state == ME_HFS1_CWS_M3_NO_UMA;
 }
 
 bool cse_is_hfs1_com_normal(void)
@@ -1193,10 +1203,8 @@ void cse_enable_ptt(bool state)
 	 * 4) HFSTS1 FW Init Complete is set
 	 * 5) Before EOP issued to CSE
 	 */
-	if (!cse_is_hfs1_cws_normal() || !cse_is_hfs1_com_normal() ||
-	    !cse_is_hfs1_fw_init_complete() || !ENV_RAMSTAGE) {
-		printk(BIOS_ERR, "HECI: Unmet prerequisites for"
-				 "FW FEATURE SHIPMENT TIME STATE OVERRIDE\n");
+	if (!cse_is_hfs1_cws_normal() || !cse_is_hfs1_com_normal() || !ENV_RAMSTAGE) {
+		printk(BIOS_ERR, "HECI: Could not set PTT state because ME is not ready\n");
 		return;
 	}
 
@@ -1209,6 +1217,14 @@ void cse_enable_ptt(bool state)
 		printk(BIOS_DEBUG, "HECI: PTT is already in the requested state\n");
 		return;
 	}
+
+	int elapsed = wait_ms(CSE_FW_INIT_TIMEOUT_MS, cse_is_hfs1_fw_init_complete());
+	if (!elapsed) {
+		printk(BIOS_ERR, "HECI: Could not set PTT state because ME is not ready\n");
+		return;
+	}
+
+	printk(BIOS_DEBUG, "HECI: CSE took %d ms to become ready\n", elapsed);
 
 	printk(BIOS_DEBUG, "HECI: Send FW FEATURE SHIPMENT TIME STATE OVERRIDE Command\n");
 
@@ -1290,6 +1306,9 @@ static void me_reset_with_count(void)
 
 static void cse_set_state(struct device *dev)
 {
+	if (CONFIG(SOC_INTEL_CSE_LITE_SYNC_BY_PAYLOAD))
+		return;
+
 	/* (CS)ME Disable Command */
 	struct me_disable_command {
 		struct mkhi_hdr hdr;
@@ -1337,6 +1356,13 @@ static void cse_set_state(struct device *dev)
 
 	int send;
 	int result;
+
+	if (fast_spi_flash_descriptor_override()) {
+		printk(BIOS_WARNING, "HECI: not setting ME state because "
+			"flash descriptor override is enabled\n");
+		return;
+	}
+
 	/*
 	 * Check if the CMOS value "me_state" exists, if it doesn't, then
 	 * don't do anything.
@@ -1501,10 +1527,12 @@ struct device_operations cse_ops = {
 };
 
 static const unsigned short pci_device_ids[] = {
+	PCI_DID_INTEL_WCL_CSE0,
 	PCI_DID_INTEL_PTL_H_CSE0,
 	PCI_DID_INTEL_PTL_U_H_CSE0,
 	PCI_DID_INTEL_LNL_CSE0,
 	PCI_DID_INTEL_MTL_CSE0,
+	PCI_DID_INTEL_ARL_CSE0,
 	PCI_DID_INTEL_APL_CSE0,
 	PCI_DID_INTEL_GLK_CSE0,
 	PCI_DID_INTEL_CNL_CSE0,

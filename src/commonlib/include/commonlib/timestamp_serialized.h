@@ -37,7 +37,8 @@ enum timestamp_id {
 	TS_ULZMA_END = 16,
 	TS_ULZ4F_START = 17,
 	TS_ULZ4F_END = 18,
-	TS_DEVICE_ENUMERATE = 30,
+	TS_DEVICE_INIT_CHIPS = 30,
+	TS_DEVICE_ENUMERATE = 31,
 	TS_DEVICE_CONFIGURE = 40,
 	TS_DEVICE_ENABLE = 50,
 	TS_DEVICE_INITIALIZE = 60,
@@ -86,6 +87,7 @@ enum timestamp_id {
 	TS_TPM_ENABLE_UPDATE_END = 554,
 	TS_ESOL_START = 555,
 	TS_ESOL_END = 556,
+	TS_FIRMWARE_SPLASH_RENDERED = 557,
 
 	/* 900-940 reserved for vendorcode extensions (900-940: AMD) */
 	TS_AGESA_INIT_RESET_START = 900,
@@ -218,6 +220,7 @@ static const struct timestamp_id_to_name {
 	TS_NAME_DEF(TS_ULZMA_END, 0, "finished LZMA decompress (ignore for x86)"),
 	TS_NAME_DEF(TS_ULZ4F_START, TS_ULZ4F_END, "starting LZ4 decompress (ignore for x86)"),
 	TS_NAME_DEF(TS_ULZ4F_END, 0, "finished LZ4 decompress (ignore for x86)"),
+	TS_NAME_DEF(TS_DEVICE_INIT_CHIPS, TS_DEVICE_ENUMERATE, "early chipset initialization"),
 	TS_NAME_DEF(TS_DEVICE_ENUMERATE, TS_DEVICE_CONFIGURE, "device enumeration"),
 	TS_NAME_DEF(TS_DEVICE_CONFIGURE, TS_DEVICE_ENABLE,  "device configuration"),
 	TS_NAME_DEF(TS_DEVICE_ENABLE, TS_DEVICE_INITIALIZE, "device enable"),
@@ -271,6 +274,7 @@ static const struct timestamp_id_to_name {
 	TS_NAME_DEF(TS_TPM_ENABLE_UPDATE_END, 0, "finished TPM enable update"),
 	TS_NAME_DEF(TS_ESOL_START, 0, "started early sign-off life (eSOL) notification"),
 	TS_NAME_DEF(TS_ESOL_END, 0, "finished early sign-off life (eSOL) notification"),
+	TS_NAME_DEF(TS_FIRMWARE_SPLASH_RENDERED, 0, "finished rendering splash screen"),
 
 	/* AMD related timestamps */
 	TS_NAME_DEF(TS_AGESA_INIT_RESET_START, TS_AGESA_INIT_RESET_END, "calling AmdInitReset"),

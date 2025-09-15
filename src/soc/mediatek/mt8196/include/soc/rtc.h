@@ -8,9 +8,11 @@
 #ifndef SOC_MEDIATEK_MT8196_RTC_H
 #define SOC_MEDIATEK_MT8196_RTC_H
 
+#include <soc/mt6685_rtc.h>
 #include <soc/rtc_common.h>
 #include <soc/rtc_reg_common.h>
 #include <stdbool.h>
+#include <timer.h>
 #include <types.h>
 
 /* RTC registers */
@@ -20,7 +22,7 @@ enum {
 	RTC_BBPU_RELOAD		= BIT(5),
 	RTC_BBPU_CBUSY		= BIT(6),
 
-	RTC_CBUSY_TIMEOUT_US	= 8000,
+	RTC_CBUSY_TIMEOUT_US	= USECS_PER_SEC,
 };
 
 enum {
@@ -58,6 +60,7 @@ enum {
 #define BBPU_RELOAD_TIMEOUT_US		100000
 #define EOSC_CHECK_CLK_TIMEOUT_US	1000000
 #define RECOVERY_RETRY_COUNT		3
+#define PROT_UNLOCK_RETRY_COUNT		3
 
 struct rtc_clk_freq {
 	u16 fqm26m_ck;
@@ -65,11 +68,6 @@ struct rtc_clk_freq {
 	u16 fqm26m_target_ck;
 };
 
-int rtc_init(int recover);
-bool rtc_gpio_init(void);
-u16 rtc_get_frequency_meter(u16 val, u16 measure_src, u16 window_size);
 void rtc_get_time(struct rtc_time *tm);
-void rtc_read(u16 addr, u16 *rdata);
-void rtc_write(u16 addr, u16 wdata);
 
 #endif /* SOC_MEDIATEK_MT8196_RTC_H */

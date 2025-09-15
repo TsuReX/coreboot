@@ -3,12 +3,15 @@
 #ifndef SOC_MEDIATEK_COMMON_DP_DPTX_COMMON_H
 #define SOC_MEDIATEK_COMMON_DP_DPTX_COMMON_H
 
+#include <types.h>
+
 #define DP_LANSE_ADJUST_SIZE		2
 #define DPTX_TBC_BUF_READSTARTADRTHRD	0x08
 #define ENABLE_DPTX_EF_MODE		0x1
 #define DPTX_AUX_SET_ENAHNCED_FRAME	0x80
 
-#define ONE_BLOCK_SIZE			128
+#define EDID_BLOCK_SIZE			128
+#define EDID_BUF_SIZE			(EDID_BLOCK_SIZE * 4)
 
 #define DP_LINK_CONSTANT_N_VALUE	0x8000
 #define DP_LINK_STATUS_SIZE		6
@@ -38,6 +41,7 @@
 #define DP_EDP_14		0x03
 #define DP_EDP_14a		0x04
 #define DP_EDP_14b		0x05
+#define EDID_EXT_BLOCK_COUNT	0x7E
 
 /* Receiver Capability */
 #define DP_DPCD_REV		0x000
@@ -210,11 +214,15 @@ struct mtk_dp {
 	bool dsc_enable;
 	bool enabled;
 	bool powered;
+	bool force_max_swing;
+	u8 edp_version;
 };
 
 int mtk_edp_init(struct mtk_dp *mtk_dp, struct edid *edid);
 int mtk_edp_enable(struct mtk_dp *mtk_dp);
 
+void dptx_set_tx_power_con(void);
+void dptx_set_26mhz_clock(void);
 bool dptx_auxread_dpcd(struct mtk_dp *mtk_dp, u8 cmd, u32 dpcd_addr,
 		       size_t length, u8 *rxbuf);
 bool dptx_auxwrite_dpcd(struct mtk_dp *mtk_dp, u8 cmd, u32 dpcd_addr,

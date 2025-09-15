@@ -115,6 +115,12 @@ endif
 ifeq ($(CONFIG_PCIEXP_SUPPORT_RESIZABLE_BARS), y)
 BUILD_STR += --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdPcieResizableBarSupport=TRUE
 endif
+# Preserve VRT bit in RTC_ADDRESS_REGISTER_D
+# AMD SoC sets this every 1.024msec, but the generic code assumes it's read-only and
+# hardcoded to 1 like on every Intel chipset since Intel ICH.
+ifeq ($(CONFIG_SOC_AMD_COMMON_BLOCK_PSP_GEN2), y)
+BUILD_STR += --pcd gPcAtChipsetPkgTokenSpaceGuid.PcdInitialValueRtcRegisterD=0x80
+endif
 
 #
 # The MrChromebox repository has the following addition options:
@@ -149,6 +155,10 @@ endif
 ifeq ($(CONFIG_EDK2_USE_LAPIC_TIMER),y)
 BUILD_STR += -D TIMER_SUPPORT=LAPIC
 endif
+# LOAD_OPTION_ROMS		= FALSE
+ifeq ($(CONFIG_EDK2_LOAD_OPTION_ROMS),y)
+BUILD_STR += -D LOAD_OPTION_ROMS=TRUE
+endif
 
 endif
 
@@ -162,6 +172,8 @@ BUILD_STR += --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn=0
 BUILD_STR += --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutRow=0
 BUILD_STR += --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutColumn=0
 endif
+
+BUILD_STR += --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdAcpiDefaultOemId="COREv4"
 
 bootloader = $(word 8,$(subst /, ,$(BUILD_STR)))
 

@@ -8,6 +8,7 @@
 #include <intelblocks/acpi.h>
 
 static const unsigned short pci_device_ids[] = {
+	PCI_DID_INTEL_WCL_DTT,
 	PCI_DID_INTEL_PTL_DTT,
 	PCI_DID_INTEL_RPL_DTT,
 	PCI_DID_INTEL_MTL_DTT,
@@ -20,8 +21,8 @@ static const unsigned short pci_device_ids[] = {
 
 static void dtt_acpi_fill_ssdt(const struct device *dev)
 {
-	/* Skip if DPTF driver in use since TCPU device will already exist */
-	if (CONFIG(DRIVERS_INTEL_DPTF))
+	/* Skip if DPTF driver or common DPTF ASL in use since TCPU device will already exist */
+	if (CONFIG(DRIVERS_INTEL_DPTF) || CONFIG(SOC_INTEL_COMMON_BLOCK_DTT_STATIC_ASL))
 		return;
 
 	const char *scope = acpi_device_scope(dev);

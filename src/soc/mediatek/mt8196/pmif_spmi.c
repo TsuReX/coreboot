@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only OR MIT */
 
 #include <console/console.h>
-#include <delay.h>
 #include <device/mmio.h>
 #include <gpio.h>
 #include <soc/addressmap.h>
@@ -114,8 +113,6 @@ static const uint32_t lat_limit[2][23] = {
 			    0x0, 0x39, 0x9, 0x0, 0x0, 0x12, 0x3e6, 0x3e6, 0x3e6, 0x0,
 			    0x1e, 0x0, 0x3e6 },
 };
-
-const size_t spmi_dev_cnt = ARRAY_SIZE(spmi_dev);
 
 static struct mtk_spmi_mst_reg *get_mst_reg(struct pmif *arb)
 {
@@ -257,7 +254,7 @@ static int spmi_mst_init(struct pmif *arb)
 	if (pmif_spmi_config_master(arb))
 		return -1;
 
-	for (i = 0; i < spmi_dev_cnt; i++) {
+	for (i = 0; i < spmi_dev_cnt(); i++) {
 		if ((arb->mstid % 2) == spmi_dev[i].mstid) {
 			spmi_cali_rd_clock_polarity(arb, &spmi_dev[i]); /* spmi_cali */
 			spmi_config_slave(arb, &spmi_dev[i]);
@@ -286,7 +283,6 @@ static void pmif_spmi_enable_swinf(struct pmif *arb)
 {
 	write32(&arb->mtk_pmif->inf_en, PMIF_SPMI_SW_CHAN);
 	write32(&arb->mtk_pmif->arb_en, PMIF_SPMI_SW_CHAN);
-	udelay(500);
 	printk(BIOS_INFO, "%s done\n", __func__);
 }
 
@@ -352,4 +348,9 @@ int pmif_spmi_init(struct pmif *arb)
 	}
 
 	return 0;
+}
+
+size_t spmi_dev_cnt(void)
+{
+	return ARRAY_SIZE(spmi_dev);
 }
