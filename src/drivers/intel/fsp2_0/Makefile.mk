@@ -10,6 +10,7 @@ romstage-y += hand_off_block.c
 romstage-$(CONFIG_DISPLAY_FSP_HEADER) += header_display.c
 romstage-$(CONFIG_DISPLAY_HOBS) += hob_display.c
 romstage-$(CONFIG_DISPLAY_UPD_DATA) += upd_display.c
+romstage-$(CONFIG_DISPLAY_UPD_DATA) += translate_fspm_config_2.c
 romstage-$(CONFIG_VERIFY_HOBS) += hob_verify.c
 romstage-y += util.c
 romstage-y += memory_init.c

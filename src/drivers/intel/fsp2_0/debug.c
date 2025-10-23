@@ -13,6 +13,10 @@ enum fsp_call_phase {
 	AFTER_FSP_CALL,
 };
 
+void display_fspm_conig(const FSPM_CONFIG *pFspmConfig);
+void display_2_fspm_config(const FSPM_CONFIG *olddata, const FSPM_CONFIG *newdata);
+
+
 static void fsp_gpio_config_check(enum fsp_call_phase phase, const char *call_str)
 {
 	switch (phase) {
@@ -75,9 +79,11 @@ void fsp_debug_before_memory_init(fsp_memory_init_fn memory_init,
 	display_mtrrs();
 
 	/* Display the UPD values */
-	if (CONFIG(DISPLAY_UPD_DATA))
-		fspm_display_upd_values(fspm_old_upd, fspm_new_upd);
-
+	if (CONFIG(DISPLAY_UPD_DATA)){
+			fspm_display_upd_values(fspm_old_upd, fspm_new_upd);
+//			display_fspm_conig(&(fspm_new_upd->FspmConfig));
+			display_2_fspm_config(&(fspm_old_upd->FspmConfig), &(fspm_new_upd->FspmConfig));
+	}
 	/* Display the call entry point and parameters */
 	if (!CONFIG(DISPLAY_FSP_CALLS_AND_STATUS))
 		return;
