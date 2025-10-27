@@ -5,10 +5,9 @@
 #include <fmap.h>
 
 int32_t ht_setup(FSPM_UPD *mupd) {
-    /* OySocketProcessorCoreConfig */
-    const EFI_GUID var_guid = VAR_GUID;
+    const EFI_GUID var_guid = HT_VAR_GUID;
     char var_name[128];
-		strcpy(var_name, VAR_NAME);
+		strcpy(var_name, HT_VAR_NAME);
     struct region_device smmstore;
 		struct ht_config ht_config;
     uint32_t ht_config_size = sizeof(struct ht_config);
