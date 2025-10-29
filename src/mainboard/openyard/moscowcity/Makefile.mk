@@ -4,5 +4,6 @@ bootblock-y += bootblock.c
 romstage-y += romstage.c
 romstage-y += ht_config.c
 romstage-y += iio_config.c
+romstage-y += sata_config.c
 ramstage-y += ramstage.c
 CPPFLAGS_common += -I$(src)/mainboard/$(MAINBOARDDIR)/include
