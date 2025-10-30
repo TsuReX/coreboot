@@ -5,7 +5,7 @@
 #include <FspmUpd.h>
 
 struct ht_config {
-	int8_t hyperthreadingdisable;
+		int8_t ProcessorHyperThreadingDisable;
 };
 
 #define HT_VAR_GUID { 0x07013588, 0xC789, 0x4E12, { 0xA7, 0xC3, 0x88, 0xFA, 0xFA, 0xE7, 0x9F, 0xC7 } }
