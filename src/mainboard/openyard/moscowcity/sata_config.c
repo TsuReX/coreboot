@@ -9,62 +9,54 @@
 #include "device/pci_type.h"
 #include "device/pci_ops.h"
 
-static void print_debug_information (void) {
-		/* PCI_DEV(SEGBUS, DEV, FN) */
-		pci_devfn_t dev = PCI_DEV(0x0, 0x17, 0x0);
+static void print_debug_information_dev(pci_devfn_t *const pdev) {
 /*
 		Emmitsburg Platform Controller Hub
 		External Design Specification
 		Reference Number: 606161
 		23.8.1 SATA Configuration Registers Summary
 */
-		uint32_t ret_val = pci_s_read_config32(dev, 0x94);
+		uint32_t ret_val = pci_s_read_config32(*pdev, 0x94);
 		printk(BIOS_DEBUG, "Sata controller 0 Port Control and Status: 0x%08X\n", ret_val);
-		pci_write_config32(dev, 0x94, 0xFF);
+		pci_write_config32(*pdev, 0x94, 0xFF);
 
-		ret_val = pci_s_read_config32(dev, 0x94);
+		ret_val = pci_s_read_config32(*pdev, 0x94);
     printk(BIOS_DEBUG, "Sata controller 0 Port Control and Status: 0x%08X\n", ret_val);
 
-		ret_val = pci_s_read_config32(dev, 0x0);
+		ret_val = pci_s_read_config32(*pdev, 0x0);
     printk(BIOS_DEBUG, "Sata controller 0 Identifiers: 0x%08X\n", ret_val);
 
-    ret_val = pci_s_read_config32(dev, 0x10);
+    ret_val = pci_s_read_config32(*pdev, 0x10);
     printk(BIOS_DEBUG, "Sata controller 0 BAR0: 0x%08X\n", ret_val);
 
-    ret_val = pci_s_read_config32(dev, 0x14);
+    ret_val = pci_s_read_config32(*pdev, 0x14);
     printk(BIOS_DEBUG, "Sata controller 0 BAR1: 0x%08X\n", ret_val);
 
-    ret_val = pci_s_read_config32(dev, 0x18);
+    ret_val = pci_s_read_config32(*pdev, 0x18);
     printk(BIOS_DEBUG, "Sata controller 0 BAR2: 0x%08X\n", ret_val);
 
-    ret_val = pci_s_read_config32(dev, 0x1C);
+    ret_val = pci_s_read_config32(*pdev, 0x1C);
     printk(BIOS_DEBUG, "Sata controller 0 BAR3: 0x%08X\n", ret_val);
 
-    ret_val = pci_s_read_config32(dev, 0x20);
+    ret_val = pci_s_read_config32(*pdev, 0x20);
     printk(BIOS_DEBUG, "Sata controller 0 BAR4: 0x%08X\n", ret_val);
 
-    ret_val = pci_s_read_config32(dev, 0x24);
+    ret_val = pci_s_read_config32(*pdev, 0x24);
     // See more information here https://wiki.osdev.org/AHCI#AHCI_Registers_and_Memory_Structures
 		printk(BIOS_DEBUG, "Sata controller 0 BAR5(AHCI Base Memory Register): 0x%08X\n", ret_val);
-
-		dev = PCI_DEV(0x0, 0x18, 0x0);
-		ret_val = pci_s_read_config32(dev, 0x94);
-    printk(BIOS_DEBUG, "Sata controller 1 Port Control and Status: 0x%08X\n", ret_val);
-		pci_write_config32(dev, 0x94, 0xFF);
-
-    ret_val = pci_s_read_config32(dev, 0x0);
-    printk(BIOS_DEBUG, "Sata controller 1 Identifiers: 0x%08X\n", ret_val);
-
-		dev = PCI_DEV(0x0, 0x19, 0x0);
-		ret_val = pci_s_read_config32(dev, 0x94);
-    printk(BIOS_DEBUG, "Sata controller 2 Port Control and Status: 0x%08X\n", ret_val);
-		pci_write_config32(dev, 0x94, 0xFF);
-
-    ret_val = pci_s_read_config32(dev, 0x0);
-    printk(BIOS_DEBUG, "Sata controller 2 Identifiers: 0x%08X\n", ret_val);
-
 }
 
+static void print_debug_information (void) {
+		/* PCI_DEV(SEGBUS, DEV, FN) */
+		pci_devfn_t dev = PCI_DEV(0x0, 0x17, 0x0);
+		print_debug_information_dev(&dev);
+
+		dev = PCI_DEV(0x0, 0x18, 0x0);
+		print_debug_information_dev(&dev);
+
+		dev = PCI_DEV(0x0, 0x19, 0x0);
+		print_debug_information_dev(&dev);
+}
 
 int32_t sata_setup(FSPM_UPD *mupd) {
     const EFI_GUID var_guid = SATA_VAR_GUID;
