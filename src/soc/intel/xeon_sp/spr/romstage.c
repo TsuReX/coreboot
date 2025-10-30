@@ -216,6 +216,13 @@ void platform_fsp_memory_init_params_cb(FSPM_UPD *mupd, uint32_t version)
 	config_upd(mupd);
 	initialize_iio_upd(mupd);
 	mainboard_memory_init_params(mupd);
+/*
+	mupd->FspmConfig.KtiLinkSpeedMode = 0;
+	mupd->FspmConfig.KtiLinkSpeed = 0;
+	mupd->FspmConfig.KtiSkuMismatchCheck = 0;
+	mupd->FspmConfig.KtiLinkL1En = 0;
+	mupd->FspmConfig.KtiLinkL0pEn = 0;
+*/
 
 	if (CONFIG(ENABLE_IO_MARGINING)) {
 		printk(BIOS_INFO, "IO Margining Enabled.\n");
