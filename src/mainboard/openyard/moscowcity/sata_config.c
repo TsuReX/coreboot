@@ -9,6 +9,11 @@
 #include "device/pci_type.h"
 #include "device/pci_ops.h"
 
+static int32_t sata_ctrlr_setup(pci_devfn_t *const pdev) {
+		// TODO Implement setting up BAR5 address to have access to AHCI
+		return 0;
+}
+
 static void print_debug_information_dev(pci_devfn_t *const pdev) {
 /*
 		Emmitsburg Platform Controller Hub
@@ -68,6 +73,8 @@ static void print_debug_information (void) {
 		dev = PCI_DEV(0x0, 0x19, 0x0);
 		printk(BIOS_DEBUG, "Sata controller 2\n");
 		print_debug_information_dev(&dev);
+
+		sata_ctrlr_setup(&dev);
 }
 
 int32_t sata_setup(FSPM_UPD *mupd) {
