@@ -9,7 +9,7 @@ struct ht_config {
 };
 
 #define HT_VAR_GUID { 0x07013588, 0xC789, 0x4E12, { 0xA7, 0xC3, 0x88, 0xFA, 0xFA, 0xE7, 0x9F, 0xC7 } }
-#define HT_VAR_NAME "OySocketProcessorCoreConfig"
+#define HT_VAR_NAME "HtConfig"
 
 int32_t ht_setup(FSPM_UPD *mupd);
 
