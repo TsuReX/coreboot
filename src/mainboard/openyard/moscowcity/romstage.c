@@ -19,6 +19,7 @@
 #include <ht_config.h>
 #include <iio_config.h>
 #include <sata_config.h>
+#include <oysetup_config.h>
 
 static void setup_gpio(void) {
 #define PID_GPIOCOM0   0x6E
@@ -174,7 +175,7 @@ void mainboard_memory_init_params(FSPM_UPD *mupd)
 	iio_setup(mupd);
 	timeout_setup();
 	sata_setup(mupd);
-
+  oysetup_setup(mupd);
 // Setup MMCFG Base Address - 0: 1G, 1: 1.5G, 2: 1.75G, 3: 2G, 4: 2.25G, 5: 3G, 6: Auto(Default)
 	printk(BIOS_DEBUG, "mupd->FspmConfig.mmCfgBase: 0x%02X\n", mupd->FspmConfig.mmCfgBase);
 // Select MMCFG Size - 0: 64M, 1: 128M, 2: 256M, 3: 512M, 4: 1G, 5: 2G, 6: Auto(Default).
