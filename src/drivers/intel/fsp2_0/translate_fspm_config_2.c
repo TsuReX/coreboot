@@ -233,39 +233,39 @@ void display_2_fspm_config(const FSPM_CONFIG *olddata, const FSPM_CONFIG *newdat
 
 static void print_db_array(const __int8 *array, size_t size, const char *name) {
 
-    printk(BIOS_SPEW,"DB ");
+    printk(BIOS_DEBUG,"DB ");
     for (size_t i = 0; i < size; i++) {
-        printk(BIOS_SPEW, "0x%02X", (uint8_t)array[i]);
+        printk(BIOS_DEBUG, "0x%02X", (uint8_t)array[i]);
         if (i != size - 1) {
-            printk(BIOS_SPEW, ", ");
+            printk(BIOS_DEBUG, ", ");
         }
     }
-    printk(BIOS_SPEW, " ; %s[%zu]\n", name, size);
+    printk(BIOS_DEBUG, " ; %s[%zu]\n", name, size);
 }
 
 static void print_db(__int8 value, const char *name) {
-    printk(BIOS_SPEW, "DB 0x%02X ; %s\n", (uint8_t)value, name);
+    printk(BIOS_DEBUG, "DB 0x%02X ; %s\n", (uint8_t)value, name);
 }
 
 static void print_dw(__int16 value, const char *name) {
-    printk(BIOS_SPEW, "DW 0x%04X ; %s\n", (uint16_t)value, name);
+    printk(BIOS_DEBUG, "DW 0x%04X ; %s\n", (uint16_t)value, name);
 }
 
 static void print_dd(__int32 value, const char *name) {
-    printk(BIOS_SPEW, "DD 0x%08X ; %s\n", (uint32_t)value, name);
+    printk(BIOS_DEBUG, "DD 0x%08X ; %s\n", (uint32_t)value, name);
 }
 
 static void print_dq(__int64 value, const char *name) {
-    printk(BIOS_SPEW, "DQ 0x%016llX ; %s\n", (unsigned long long)value, name);
+    printk(BIOS_DEBUG, "DQ 0x%016llX ; %s\n", (unsigned long long)value, name);
 }
 
 
 void display_2_fspm_config(const FSPM_CONFIG *olddata, const FSPM_CONFIG *newdata) {
-		printk(BIOS_SPEW, "\nOld FSPM_CONFIG\n");
+		printk(BIOS_DEBUG, "\n\n\nOld FSPM_CONFIG\n");
 		display_fspm_conig (olddata);
-    printk(BIOS_SPEW, "New FSPM_CONFIG\n");
+    printk(BIOS_DEBUG, "\n\n\nNew FSPM_CONFIG\n");
     display_fspm_conig (newdata);
-		printk(BIOS_SPEW, "\n");
+		printk(BIOS_DEBUG, "\n\n\n");
 }
 
 void display_fspm_conig(const FSPM_CONFIG *data) {
