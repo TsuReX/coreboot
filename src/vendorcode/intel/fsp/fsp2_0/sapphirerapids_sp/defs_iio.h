@@ -33,7 +33,7 @@ are permitted provided that the following conditions are met:
 #ifndef __DEFS_IIO_H__
 #define __DEFS_IIO_H__
 
-#include <fsp/api.h>
+//#include <fsp/api.h>
 
 #define IIO_MODE_GEN4_ONLY                  0
 #define IIO_MODE_GEN5                       1
@@ -95,6 +95,9 @@ are permitted provided that the following conditions are met:
 
 #pragma pack(1)
 // It's better to align with UPD_IIO_PCIE_PORT_CONFIG
+#define UINT8 uint8_t
+#define UINT16 uint16_t
+#define BOOLEAN uint8_t
 typedef struct {
   UINT8    SLOTEIP;
   UINT8    SLOTHPCAP;
