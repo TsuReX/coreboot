@@ -23,6 +23,7 @@
 #define IOU6 6
 
 static void pe_controller_setup(FSPM_UPD *mupd, uint32_t socket, uint32_t pe_controller_number, UINT8 iio_bifur) {
+  printk(BIOS_DEBUG, "pe_controller_setup( socket: %d, pe_controller_number: %d, iio_bifur %d) \n", socket, pe_controller_number, iio_bifur);
   static UPD_IIO_PCIE_PORT_CONFIG_ENTRY  *pe_controller_config;
   switch (iio_bifur) {
     case IIO_BIFURCATE_x4x4xxx8:
@@ -39,6 +40,7 @@ static void pe_controller_setup(FSPM_UPD *mupd, uint32_t socket, uint32_t pe_con
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 7),
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 8)
       };
+      printk(BIOS_DEBUG, "Bifurcation: x4x4xxx8\n");
       pe_controller_config = pe_controller_config_4_4_8;
       break;
 
@@ -56,6 +58,7 @@ static void pe_controller_setup(FSPM_UPD *mupd, uint32_t socket, uint32_t pe_con
         CFG_UPD_PCIE_PORT(_PEXPUNHIDE, _SLOTIMP, 7),
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 8)
       };
+      printk(BIOS_DEBUG, "Bifurcation: xxx8x4x4\n");
       pe_controller_config = pe_controller_config_8_4_4;
       break;
 
@@ -72,6 +75,7 @@ static void pe_controller_setup(FSPM_UPD *mupd, uint32_t socket, uint32_t pe_con
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 7),
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 8)
       };
+      printk(BIOS_DEBUG, "Bifurcation: xxx8xxx8\n");
       pe_controller_config = pe_controller_config_8_8;
       break;
 
@@ -87,6 +91,7 @@ static void pe_controller_setup(FSPM_UPD *mupd, uint32_t socket, uint32_t pe_con
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 7),
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 8)
       };
+      printk(BIOS_DEBUG, "Bifurcation: xxxxxx16\n");
       pe_controller_config = pe_controller_config_16;
       break;
 
@@ -107,6 +112,7 @@ static void pe_controller_setup(FSPM_UPD *mupd, uint32_t socket, uint32_t pe_con
         CFG_UPD_PCIE_PORT(_PEXPUNHIDE, _SLOTIMP, 7),
         CFG_UPD_PCIE_PORT(_PEXPHIDE, _SLOTNOIMP, 8)
     };
+    printk(BIOS_DEBUG, "Bifurcation: x4x4x4x4\n");
     pe_controller_config = pe_controller_config_4_4_4_4;
 
   };
@@ -116,6 +122,16 @@ static void pe_controller_setup(FSPM_UPD *mupd, uint32_t socket, uint32_t pe_con
   // 0 -> DMI; 1-8 -> PE0; 9-16 -> PE1
   for (uint32_t pe_controller_port = 0; pe_controller_port < 8; pe_controller_port++) {
     const UPD_IIO_PCIE_PORT_CONFIG_ENTRY *port_cfg = &pe_controller_config[pe_controller_port];
+    printk(BIOS_DEBUG, "PE port number: %d, ", pe_controller_number * 8 + 1 + pe_controller_port);
+    if (port_cfg->SLOTIMP == 1)
+      printk(BIOS_DEBUG, "implemented, ");
+    else
+      printk(BIOS_DEBUG, "NOT implemented, ");
+
+    if (port_cfg->PEXPHIDE == 1)
+      printk(BIOS_DEBUG, "controller hidden\n");
+    else
+      printk(BIOS_DEBUG, "controller implemented\n");
 
     PciePortConfig[socket].SLOTIMP[pe_controller_number * 8 + 1 + pe_controller_port] = port_cfg->SLOTIMP;
     PciePortConfig[socket].SLOTPSP[pe_controller_number * 8 + 1 + pe_controller_port] = pe_controller_number * 8 + 1 + pe_controller_port;
@@ -194,6 +210,7 @@ int32_t iio_setup(FSPM_UPD *mupd) {
         printk(BIOS_DEBUG, "ConfigIOU6[1]: 0x%02X\n", iio_config.ConfigIOU6[1]);
 
     }
+    // FSPM_UPD and FSPM_CONFIG are define in 3rdparty/fsp/EagleStreamFspBinPkg/Include/FspmUpd.h
     mupd->FspmConfig.IioConfigIOU0[SOCKET0] = iio_config.ConfigIOU0[SOCKET0];
     pe_controller_setup(mupd, SOCKET0, IOU0, iio_config.ConfigIOU0[SOCKET0]);
     mupd->FspmConfig.IioConfigIOU0[SOCKET1] = iio_config.ConfigIOU0[SOCKET1];
