@@ -1,0 +1,67 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver HWCheckDxe
+//  
+// TODO: Detailed Description of UEFI Driver HWCheckDxe
+//
+// TODO: Copyright for UEFI Driver HWCheckDxe
+//  
+// TODO: License for UEFI Driver HWCheckDxe
+//
+////
+
+#include "HWCheckNVStore.h"
+
+formset guid     = HW_CHECK_FORM_SET_GUID,
+  title    = STRING_TOKEN(STR_SAMPLE_FORM_SET_TITLE),
+  help     = STRING_TOKEN(STR_SAMPLE_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_SECURITY_FORMSET_GUID,
+  subclass = 0,
+
+  varstore HW_CHECK_CONFIGURATION,  // This is the data structure type
+  //varid = CONFIGURATION_VARSTORE_ID,      // Optional VarStore ID
+  name  = HWCheckConfig,                  // Define referenced name in vfr
+  guid  = HW_CHECK_VAR_GUID;    // GUID of this buffer storage
+
+  form formid = 1, title = STRING_TOKEN(STR_SAMPLE_FORM1_TITLE);
+    subtitle text = STRING_TOKEN(STR_SUBTITLE_TEXT);
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+
+    checkbox varid   = HWCheckConfig.HWCheckEnable,
+                 prompt   = STRING_TOKEN(STR_CHECK_BOX_PROMPT),
+                 help     = STRING_TOKEN(STR_CHECK_BOX_HELP),
+                 //
+                 // CHECKBOX_DEFAULT indicate this checkbox is marked with EFI_IFR_CHECKBOX_DEFAULT
+                 // 
+                 flags    = INTERACTIVE,
+                 key      = 0x1270,
+    endcheckbox;
+
+    suppressif  ideqval HWCheckConfig.HWCheckEnable == 0;
+      subtitle text = STRING_TOKEN(STR_EMPTY);
+
+      checkbox varid   = HWCheckConfig.HWCheckInformBmc,
+                 prompt   = STRING_TOKEN(STR_CHECK_INFORM_BMC_PROMPT),
+                 help     = STRING_TOKEN(STR_CHECK_INFORM_BMC_HELP),
+                 flags    = 0,
+                 key      = 0,
+      endcheckbox;
+
+      checkbox varid   = HWCheckConfig.HWCheckSystemHalt,
+                 prompt   = STRING_TOKEN(STR_CHECK_SYSTEM_HALT_PROMPT),
+                 help     = STRING_TOKEN(STR_CHECK_SYSTEM_HALT_HELP),
+                 flags    = 0,
+                 key      = 0,
+      endcheckbox;
+
+      subtitle text = STRING_TOKEN(STR_EMPTY);
+
+      text
+           help    = STRING_TOKEN(STR_SUBMITTED_CALLBACK_TEST_HELP),
+           text  = STRING_TOKEN(STR_SUBMITTED_CALLBACK_TEST_PROMPT),
+           flags   = INTERACTIVE,
+           key = 0x1250;
+    endif;
+  endform;
+
+endformset;

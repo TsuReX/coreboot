@@ -1,0 +1,90 @@
+## @file
+#  Produces EFI_HW_CHECK_PROTOCOL and provides the capability to
+#  create/remove RAM disks in a setup browser.
+#
+#  Copyright (c) 2016, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION               = 0x00010005
+  BASE_NAME                 = HWCheckDxe
+  MODULE_UNI_FILE           = HWCheckDxe.uni
+  FILE_GUID                 = 28A03FF4-12B3-4305-A417-BB1A4F94081F
+  MODULE_TYPE               = DXE_DRIVER
+  VERSION_STRING            = 1.0
+  ENTRY_POINT               = HWCheckDxeEntryPoint
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES      = IA32 X64 ARM AARCH64
+#
+
+[Sources]
+  HWCheckDriver.c
+  HWCheckFunctions.h
+  HWCheckFunctions.c
+  HWCheckImpl.c
+  HWCheckImpl.h
+  HWCheckHii.vfr
+  HWCheckHiiStrings.uni
+  HWCheckNVStore.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  OpenYardPkg/OpenYardPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  UefiLib
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  UefiHiiServicesLib
+  MemoryAllocationLib
+  HiiLib
+  DevicePathLib
+  PrintLib
+  PcdLib
+  IpmiTransportLib
+
+[Guids]
+  gEfiSmbiosTableGuid
+  gEfiSmbios3TableGuid
+  gEfiDiskInfoIdeInterfaceGuid
+  gEfiDiskInfoNvmeInterfaceGuid
+  gEfiDiskInfoAhciInterfaceGuid
+
+[Protocols]
+  gEfiHiiConfigAccessProtocolGuid                ## PRODUCES
+  gEfiDevicePathProtocolGuid                     ## PRODUCES
+  gEfiDiskInfoProtocolGuid
+  gEfiPciIoProtocolGuid
+  gEfiSmbiosProtocolGuid
+  gEfiBlockIoProtocolGuid
+
+[Pcd]
+
+[Depex]
+  gEfiGraphicsOutputProtocolGuid AND
+#  gEfiDxeIpmiTransportProtocolGuid AND
+#  gEfiHiiPackageListProtocolGuid AND
+  gEfiHiiDatabaseProtocolGuid AND
+#  gEfiHiiConfigAccessProtocolGuid AND
+#  gEfiHiiStringProtocolGuid AND
+  gEfiHiiConfigRoutingProtocolGuid AND
+#  gEfiFormBrowser2ProtocolGuid AND
+  gEfiDiskInfoProtocolGuid AND
+  gEfiPciIoProtocolGuid AND
+  gEfiSmbiosProtocolGuid

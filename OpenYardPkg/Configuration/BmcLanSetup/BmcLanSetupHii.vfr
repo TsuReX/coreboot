@@ -1,0 +1,181 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver BmcLanSetupDxe
+//  
+// TODO: Detailed Description of UEFI Driver BmcLanSetupDxe
+//
+// TODO: Copyright for UEFI Driver BmcLanSetupDxe
+//  
+// TODO: License for UEFI Driver BmcLanSetupDxe
+//
+////
+
+#include <Guid/ServerMgmtSetupVariable.h>
+#include "BmcLanSetupHii.h"
+#include <Uefi/UefiMultiPhase.h>
+
+#define FORM_BMC_LAN_SETUP_ID            0x4601
+#define FORM_BMC_LAN_SETUP_IP4_ID        0x4602
+#define FORM_BMC_LAN_SETUP_IP6_ID        0x4603
+
+#define BMC_NETWORK_STATION_IP1_KEY      0x4640
+#define BMC_NETWORK_SUBNET1_KEY          0x4641
+#define BMC_NETWORK_ROUTER_IP1_KEY       0x4642
+#define BMC_NETWORK_ROUTER_MAC1_KEY      0x4643
+
+formset guid     = BMC_LAN_SETUP_FORM_SET_GUID,
+  title    = STRING_TOKEN(STR_BMC_LAN_SETUP_FORM_SET_TITLE),
+  help     = STRING_TOKEN(STR_BMC_LAN_SETUP_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_CONFIG_FORMSET_GUID,
+  subclass = 0,
+
+  efivarstore SERVER_MGMT_SETUP_CONFIGURATION,  // This is the data structure type
+  attribute = EFI_VARIABLE_RUNTIME_ACCESS | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE,
+  //varid = CONFIGURATION_VARSTORE_ID,      // Optional VarStore ID
+  name  = ServerMgmtSetup,                  // Define referenced name in vfr
+  guid  = SERVER_MGMT_SETUP_VARIABLE_GUID;    // GUID of this buffer storage
+
+
+  form formid = FORM_BMC_LAN_SETUP_ID, title = STRING_TOKEN(STR_BMC_LAN_SETUP_FORM_SET_TITLE);
+    subtitle text = STRING_TOKEN(STR_BMC_LAN_SETUP_FORM_SET_TITLE);
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+
+    goto FORM_BMC_LAN_SETUP_IP4_ID,
+            prompt = STRING_TOKEN(STR_BMC_LAN_SETUP_IP4_FORM_TITLE),
+            help = STRING_TOKEN(STR_BMC_LAN_SETUP_FORM_SET_HELP),
+            key = FORM_BMC_LAN_SETUP_IP4_ID;
+
+    suppressif TRUE;
+      goto FORM_BMC_LAN_SETUP_IP6_ID,
+            prompt = STRING_TOKEN(STR_BMC_LAN_SETUP_IP6_FORM_TITLE),
+            help = STRING_TOKEN(STR_BMC_LAN_SETUP_FORM_SET_HELP),
+            key = FORM_BMC_LAN_SETUP_IP6_ID;
+    endif;
+
+  endform;
+
+  form formid = FORM_BMC_LAN_SETUP_IP4_ID,
+  title = STRING_TOKEN(STR_BMC_LAN_SETUP_IP4_FORM_TITLE);
+    subtitle text = STRING_TOKEN(STR_BMC_LAN_SETUP_IP4_FORM_TITLE);
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+
+            //suppressif TRUE;
+            //    numeric varid = ServerMgmtSetup.RefInterval,
+            //    prompt = STRING_TOKEN(STR_EMPTY),
+            //    help = STRING_TOKEN(STR_EMPTY),
+            //    flags   = INTERACTIVE,
+            //    key     = 0x46ff,
+            //    minimum = 0,
+            //    maximum = 99,
+            //    step = 1,
+            //    default = 60,
+            //    refresh interval = 5
+            //    endnumeric;
+            //endif;
+
+    oneof varid = ServerMgmtSetup.BmcLan1,
+        prompt      = STRING_TOKEN(STR_IPV4_LAN1_OPTION),
+        help        = STRING_TOKEN(STR_LAN_OPTION_HELP),
+        flags = RESET_REQUIRED,
+        default value = 0,
+        option text = STRING_TOKEN(STR_UNSPECIFIED), value = 0, flags = 0;
+        option text = STRING_TOKEN(STR_BIOS_STATIC), value = 1, flags = 0;
+        option text = STRING_TOKEN(STR_BMC_DYNAMIC),  value = 2, flags = 0;
+    endoneof;
+
+    suppressif NOT ideqval ServerMgmtSetup.BmcLan1 == 1;
+      string varid = ServerMgmtSetup.StationIp1,
+          prompt = STRING_TOKEN(STR_STATION_IP_ADDRESS_LAN1),
+          help = STRING_TOKEN(STR_STATION_IP_HELP),
+          flags = INTERACTIVE,
+          key = BMC_NETWORK_STATION_IP1_KEY,
+          minsize = 1,
+          maxsize = 15,
+          default = STRING_TOKEN(STR_STATION_IP_ADDRESS_DEFAULT),
+      endstring;
+      
+      string varid = ServerMgmtSetup.Subnet1,
+          prompt = STRING_TOKEN(STR_SUBNET_MASK_LAN1),
+          help = STRING_TOKEN(STR_SUBNET_MASK_HELP),
+          flags = INTERACTIVE,
+          key = BMC_NETWORK_SUBNET1_KEY,
+          minsize = 1,
+          maxsize = 15,
+          default = STRING_TOKEN(STR_SUBNET_MASK_DEFAULT),
+      endstring;
+      
+       text help  = STRING_TOKEN (STR_BMC_STATION_MAC_ADDRESS),
+           text = STRING_TOKEN(STR_STATION_MAC_ADDRESS),
+           text = STRING_TOKEN(STR_STATION_MAC1_VAL),
+           flags = 0,
+           key   = 0;
+      
+      string varid = ServerMgmtSetup.RouterIp1,
+          prompt = STRING_TOKEN(STR_ROUTER_IP_ADDRESS_LAN1),
+          help = STRING_TOKEN(STR_ROUTER_IP_HELP),
+          flags = INTERACTIVE,
+          key = BMC_NETWORK_ROUTER_IP1_KEY,
+          minsize = 1,
+          maxsize = 15,
+          default = STRING_TOKEN(STR_ROUTER_IP_ADDRESS_DEFAULT),
+      endstring;
+      
+      string varid = ServerMgmtSetup.RouterMac1,
+          prompt = STRING_TOKEN(STR_ROUTER_MAC_ADDRESS_LAN1),
+          help = STRING_TOKEN(STR_ROUTER_MAC_HELP),
+          flags = INTERACTIVE,
+          key = BMC_NETWORK_ROUTER_MAC1_KEY,
+          minsize = 17,
+          maxsize = 17,
+          default = STRING_TOKEN(STR_ROUTER_MAC_ADDRESS_DEFAULT),
+      endstring;
+    endif;
+
+    suppressif ideqval ServerMgmtSetup.BmcLan1 == 1;
+           text help  = STRING_TOKEN (STR_CURR_LAN_OPTION_HELP),
+               text = STRING_TOKEN(STR_CURR_LAN_OPTION),
+               text = STRING_TOKEN(STR_CURR_LANCAS1_VAL),
+               flags = 0,
+               key   = 0;
+               
+           text help  = STRING_TOKEN (STR_BMC_STATION_IP_HELP),
+               text = STRING_TOKEN(STR_CURR_STATION_IP_ADDRESS),
+               text = STRING_TOKEN(STR_STATION_IP1_VAL),
+               flags = 0,
+               key   = 0;
+
+           text help  = STRING_TOKEN (STR_BMC_SUBNET_MASK_HELP),
+               text = STRING_TOKEN(STR_CURR_SUBNET_MASK),
+               text = STRING_TOKEN(STR_SUBNET_MASK1_VAL),
+               flags = 0,
+               key   = 0;
+
+           text help  = STRING_TOKEN (STR_BMC_STATION_MAC_ADDRESS),
+               text = STRING_TOKEN(STR_STATION_MAC_ADDRESS),
+               text = STRING_TOKEN(STR_STATION_MAC1_VAL),
+               flags = 0,
+               key   = 0;
+
+           text help  = STRING_TOKEN (STR_BMC_ROUTER_IP_HELP),
+               text = STRING_TOKEN(STR_CURR_ROUTER_IP_ADDRESS),
+               text = STRING_TOKEN(STR_ROUTER_IP1_VAL),
+               flags = 0,
+               key   = 0;
+
+           text help  = STRING_TOKEN (STR_BMC_ROUTER_MAC_HELP),
+               text = STRING_TOKEN(STR_CURR_ROUTER_MAC_ADDRESS),
+               text = STRING_TOKEN(STR_ROUTER_MAC1_VAL),
+               flags = 0,
+               key   = 0;
+      endif;
+
+  endform;
+
+  form formid = FORM_BMC_LAN_SETUP_IP6_ID,
+  title = STRING_TOKEN(STR_BMC_LAN_SETUP_IP6_FORM_TITLE);
+    subtitle text = STRING_TOKEN(STR_BMC_LAN_SETUP_IP6_FORM_TITLE);
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  endform;
+
+endformset;

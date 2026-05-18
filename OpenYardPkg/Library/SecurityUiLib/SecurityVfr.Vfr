@@ -1,0 +1,32 @@
+///** @file
+//
+//  Boot Manager formset.
+//
+//  Copyright (c) 2004 - 2015, Intel Corporation. All rights reserved.<BR>
+//  SPDX-License-Identifier: BSD-2-Clause-Patent
+//
+//**/
+
+
+#define FORMSET_GUID  { 0x847bc3fe, 0xb974, 0x446d, 0x94, 0x49, 0x5a, 0xd5, 0x41, 0x2e, 0x99, 0x49 }
+
+#define FORM_SECURITY_INFO_ID       0x1000
+
+#define LABEL_DEVICES_LIST                 0x1100
+#define LABEL_END                          0xffff
+
+formset
+  guid      = FORMSET_GUID,
+  title     = STRING_TOKEN(STR_SECURITY_TITLE),
+  help      = STRING_TOKEN(STR_SECURITY_HELP),
+  classguid = gEfiIfrFrontPageGuid,
+
+  form formid = FORM_SECURITY_INFO_ID,
+    title  = STRING_TOKEN(STR_SECURITY_TITLE);
+
+    label LABEL_DEVICES_LIST;
+    label LABEL_END;
+
+  endform;
+
+endformset;

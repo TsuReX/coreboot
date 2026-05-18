@@ -1,0 +1,47 @@
+﻿//// @file
+//
+// TODO: Brief Description of UEFI Driver VarstoreInfoDxe
+//  
+// TODO: Detailed Description of UEFI Driver VarstoreInfoDxe
+//
+// TODO: Copyright for UEFI Driver VarstoreInfoDxe
+//  
+// TODO: License for UEFI Driver VarstoreInfoDxe
+// 
+////
+
+#langdef en-US "English"
+#langdef ru-RU "Русский"
+
+#string STR_SAMPLE_FORM_SET_TITLE                      #language en-US  "Varstore Info"
+                                                       #language ru-RU  "Информация о хранилище UEFI переменных"
+#string STR_SAMPLE_FORM_SET_HELP                       #language en-US  "See information about nvram variable storage."
+                                                       #language ru-RU  "Просмотр информации о хранилище UEFI переменных."
+#string STR_SAMPLE_FORM1_TITLE                         #language en-US  "Varstore Info"
+                                                       #language ru-RU  "Информация о хранилище UEFI переменных"
+
+#string STR_SUBTITLE_TEXT                              #language en-US "Varstore Info"
+                                                       #language ru-RU  "Информация о хранилище UEFI переменных"
+
+#string STR_EMPTY                                      #language en-US " "
+
+#string MAXIMUM_VARIABLE_STORAGE_SIZE_STRING_HELP      #language en-US "Maximum variable storage size."
+                                                       #language ru-RU "Максимальный размер хранилища UEFI переменных в байтах."
+
+#string MAXIMUM_VARIABLE_STORAGE_SIZE_STRING           #language en-US "MaximumVarstoreSize    :"
+                                                       #language ru-RU "Всего байтов           :"
+#string MAXIMUM_VARIABLE_STORAGE_SIZE_STRING2          #language en-US " "
+
+#string REMAINING_VARIABLE_STORAGE_SIZE_HELP           #language en-US "Remaining variable storage size."
+                                                       #language ru-RU "Свободный объем хранилища UEFI переменных в байтах."
+
+#string REMAINING_VARIABLE_STORAGE_SIZE                #language en-US "RemainingVarstoreSize  :"
+                                                       #language ru-RU "Осталось байтов        :"
+#string REMAINING_VARIABLE_STORAGE_SIZE2               #language en-US " "
+
+#string MAXIMUM_VARIABLE_SIZE_HELP                     #language en-US "Maximum variable size."
+                                                       #language ru-RU "Максимальный размер одной UEFI переменной в байтах."
+
+#string MAXIMUM_VARIABLE_SIZE                          #language en-US "MaxVarSize             :"
+                                                       #language ru-RU "Макс. размер переменной:"
+#string MAXIMUM_VARIABLE_SIZE2                         #language en-US " "

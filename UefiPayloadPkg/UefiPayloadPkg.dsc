@@ -22,17 +22,17 @@
   SUPPORTED_ARCHITECTURES             = IA32|X64
   BUILD_TARGETS                       = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER                    = DEFAULT
-  OUTPUT_DIRECTORY                    = Build/UefiPayloadPkg$(BUILD_ARCH)
+  OUTPUT_DIRECTORY                    = Build/UefiPayloadPkg
   FLASH_DEFINITION                    = UefiPayloadPkg/UefiPayloadPkg.fdf
   PCD_DYNAMIC_AS_DYNAMICEX            = TRUE
 
   DEFINE SOURCE_DEBUG_ENABLE          = FALSE
   DEFINE PS2_KEYBOARD_ENABLE          = FALSE
-  DEFINE RAM_DISK_ENABLE              = FALSE
+  DEFINE RAM_DISK_ENABLE              = TRUE
   DEFINE SIO_BUS_ENABLE               = FALSE
   DEFINE SECURITY_STUB_ENABLE         = TRUE
   DEFINE SMM_SUPPORT                  = FALSE
-  DEFINE PLATFORM_BOOT_TIMEOUT        = 3
+  DEFINE PLATFORM_BOOT_TIMEOUT        = 5
   DEFINE BOOT_MANAGER_ESCAPE          = FALSE
   DEFINE ATA_ENABLE                   = TRUE
   DEFINE SD_ENABLE                    = TRUE
@@ -95,7 +95,7 @@
   DEFINE DEFAULT_TERMINAL_TYPE        = 0
 
   # Enabling the serial terminal will slow down the boot menu redering!
-  DEFINE DISABLE_SERIAL_TERMINAL      = FALSE
+  DEFINE DISABLE_SERIAL_TERMINAL      = TRUE
 
   #
   #  typedef struct {
@@ -128,7 +128,7 @@
   DEFINE VARIABLE_SUPPORT      = EMU
 
   DEFINE DISABLE_RESET_SYSTEM  = FALSE
-  DEFINE NETWORK_DRIVER_ENABLE = FALSE
+  DEFINE NETWORK_DRIVER_ENABLE = TRUE
 
   # Dfine the maximum size of the capsule image without a reset flag that the platform can support.
   DEFINE MAX_SIZE_NON_POPULATE_CAPSULE = 0xa00000
@@ -183,6 +183,8 @@
 ################################################################################
 
 !include MdePkg/MdeLibs.dsc.inc
+
+!include IpmiFeaturePkg/Include/IpmiFeatureDxe.dsc
 
 [LibraryClasses]
   #
@@ -257,7 +259,8 @@
   SecurityManagementLib|MdeModulePkg/Library/DxeSecurityManagementLib/DxeSecurityManagementLib.inf
   UefiBootManagerLib|MdeModulePkg/Library/UefiBootManagerLib/UefiBootManagerLib.inf
   BootLogoLib|MdeModulePkg/Library/BootLogoLib/BootLogoLib.inf
-  CustomizedDisplayLib|MdeModulePkg/Library/CustomizedDisplayLib/CustomizedDisplayLib.inf
+#  CustomizedDisplayLib|MdeModulePkg/Library/CustomizedDisplayLib/CustomizedDisplayLib.inf
+  CustomizedDisplayLib|OpenYardPkg/Library/CustomizedDisplayLib/CustomizedDisplayLib.inf
   FrameBufferBltLib|MdeModulePkg/Library/FrameBufferBltLib/FrameBufferBltLib.inf
   ResetSystemLib|UefiPayloadPkg/Library/ResetSystemLib/ResetSystemLib.inf
 !if $(USE_CBMEM_FOR_CONSOLE) == TRUE
@@ -340,6 +343,11 @@
 !endif
   CpuExceptionHandlerLib|UefiCpuPkg/Library/CpuExceptionHandlerLib/DxeCpuExceptionHandlerLib.inf
   CpuPageTableLib|UefiCpuPkg/Library/CpuPageTableLib/CpuPageTableLib.inf
+
+  PostCodeMapLib|OpenYardPkg/Library/PostCodeMapLib/PostCodeMapLib.inf
+  PostCodeLib|MdePkg/Library/BasePostCodeLibPort80/BasePostCodeLibPort80.inf
+  
+  IpmiTransportLib|OpenYardPkg/Library/IpmiTransportLibNull/IpmiTransportLibNull.inf
 
 [LibraryClasses.common.SEC]
   HobLib|UefiPayloadPkg/Library/PayloadEntryHobLib/HobLib.inf
@@ -453,6 +461,9 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdHiiOsRuntimeSupport|FALSE
   gEfiMdeModulePkgTokenSpaceGuid.PcdPciDegradeResourceForOptionRom|FALSE
 
+  
+  gIpmiFeaturePkgTokenSpaceGuid.PcdIpmiFeatureEnable|TRUE
+
 [PcdsFeatureFlag.X64]
   gEfiMdeModulePkgTokenSpaceGuid.PcdDxeIplSwitchToLongMode|TRUE
   gUefiCpuPkgTokenSpaceGuid.PcdCpuSmmEnableBspElection|FALSE
@@ -513,6 +524,8 @@
   gEfiCryptoPkgTokenSpaceGuid.PcdCryptoServiceFamilyEnable.TlsGet.Family                            | PCD_CRYPTO_SERVICE_ENABLE_FAMILY
 !endif
 !endif
+
+  gOpenYardPkgTokenSpaceGuid.PcdStatusCodeUsePostCode|TRUE
 
 [PcdsPatchableInModule.X64]
 !if $(NETWORK_DRIVER_ENABLE) == TRUE
@@ -603,18 +616,40 @@
 
   ## This PCD defines the video horizontal resolution.
   #  This PCD could be set to 0 then video resolution could be at highest resolution.
-  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoHorizontalResolution|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoHorizontalResolution|1024
   ## This PCD defines the video vertical resolution.
   #  This PCD could be set to 0 then video resolution could be at highest resolution.
-  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoVerticalResolution|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoVerticalResolution|768
+  
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutRow|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn|0
 
   ## The PCD is used to specify the video horizontal resolution of text setup.
-  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoHorizontalResolution|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoHorizontalResolution|1280
   ## The PCD is used to specify the video vertical resolution of text setup.
-  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoVerticalResolution|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoVerticalResolution|800
+  
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutColumn|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutRow|0
+  
+  ## Default current ISO 639-2 language: English & French.
+  # @Prompt Default Value of LangCodes Variable.
+  #gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLangCodes|"engrus"
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLangCodes|"eng"
+  
+  ## Default current ISO 639-2 language: English.
+  # @Prompt Default Value of Lang Variable.
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultLang|"eng"
+  
+  ## Default platform supported RFC 4646 languages: (American) English & French.
+  # @Prompt Default Value of PlatformLangCodes Variable.
+  #gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultPlatformLangCodes|"en-US;ru-RU"
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultPlatformLangCodes|"en-US"
+  
+  ## Default current RFC 4646 language: (American) English.
+  # @Prompt Default Value of PlatformLang Variable.
+  gEfiMdePkgTokenSpaceGuid.PcdUefiVariableDefaultPlatformLang|"en-US"
 
-  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutRow|31
-  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn|100
   gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress|0
   gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseSize|0
   gEfiMdeModulePkgTokenSpaceGuid.PcdGhcbBase|0
@@ -680,6 +715,16 @@
       !endif
       NULL|MdeModulePkg/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
   }
+  
+  IpmiFeaturePkg/GenericIpmi/Dxe/GenericIpmi.inf
+  IpmiFeaturePkg/IpmiInit/DxeIpmiInit.inf
+  
+  OpenYardPkg/Feature/VarstoreInfoDxe/VarstoreInfoDxe.inf
+  OpenYardPkg/Feature/HWCheckDxe/HWCheckDxe.inf
+  OpenYardPkg/Feature/SetVarBlockDxe/SetVarBlockDxe.inf
+
+  OpenYardPkg/Configuration/CpuSetup/CpuSetupDxe.inf
+  OpenYardPkg/Configuration/ChipsetSetup/ChipsetSetupDxe.inf
 
   #
   # Components that produce the architectural protocols
@@ -688,15 +733,23 @@
   MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
 !endif
   UefiCpuPkg/CpuDxe/CpuDxe.inf
-  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
+#  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
+  OpenYardPkg/Universal/BdsDxe/BdsDxe.inf
 !if $(BOOTSPLASH_IMAGE)
   MdeModulePkg/Logo/LogoDxe.inf
 !endif
-  MdeModulePkg/Application/UiApp/UiApp.inf {
+#  MdeModulePkg/Application/UiApp/UiApp.inf {
+  OpenYardPkg/Application/UiApp/UiApp.inf {
     <LibraryClasses>
+      PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+      NULL|OpenYardPkg/Library/InformationUiLib/InfoUiLib.inf
+	  NULL|OpenYardPkg/Library/ConfigurationUiLib/ConfigUiLib.inf
+      NULL|OpenYardPkg/Library/SecurityUiLib/SecurityUiLib.inf
       NULL|MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf
-      NULL|MdeModulePkg/Library/BootManagerUiLib/BootManagerUiLib.inf
-      NULL|MdeModulePkg/Library/BootMaintenanceManagerUiLib/BootMaintenanceManagerUiLib.inf
+#      NULL|MdeModulePkg/Library/BootManagerUiLib/BootManagerUiLib.inf
+      NULL|OpenYardPkg/Library/BootManagerUiLib/BootManagerUiLib.inf
+#      NULL|MdeModulePkg/Library/BootMaintenanceManagerUiLib/BootMaintenanceManagerUiLib.inf
+      NULL|OpenYardPkg/Library/BootMaintenanceManagerUiLib/BootMaintenanceManagerUiLib.inf
   }
   MdeModulePkg/Application/BootManagerMenuApp/BootManagerMenuApp.inf
 
@@ -733,7 +786,10 @@
   }
 
   MdeModulePkg/Universal/ReportStatusCodeRouter/RuntimeDxe/ReportStatusCodeRouterRuntimeDxe.inf
-  MdeModulePkg/Universal/StatusCodeHandler/RuntimeDxe/StatusCodeHandlerRuntimeDxe.inf
+  MdeModulePkg/Universal/StatusCodeHandler/RuntimeDxe/StatusCodeHandlerRuntimeDxe.inf {
+      <LibraryClasses>
+        NULL|OpenYardPkg/Library/PostCodeStatusCodeHandlerLib/RuntimeDxePostCodeStatusCodeHandlerLib.inf
+    }
   UefiCpuPkg/CpuIo2Dxe/CpuIo2Dxe.inf
   MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
 !if $(MEMORY_TEST) == "GENERIC"
@@ -742,8 +798,10 @@
   MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
 !endif
   MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
-  MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
-  MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
+#  MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+  OpenYardPkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+#  MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
+  OpenYardPkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
   MdeModulePkg/Universal/PlatformDriOverrideDxe/PlatformDriOverrideDxe.inf
   MdeModulePkg/Universal/EbcDxe/EbcDxe.inf
 
@@ -810,7 +868,8 @@
   MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
   MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
   MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
-  MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+#  MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+  OpenYardPkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
   MdeModulePkg/Bus/Usb/UsbMouseDxe/UsbMouseDxe.inf
 
   #
@@ -834,14 +893,19 @@
   #
   MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
   MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
-  MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
+#  MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
+  OpenYardPkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
 !if $(DISABLE_SERIAL_TERMINAL) == FALSE
-  MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
+#  MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
+  OpenYardPkg/Universal/Console/TerminalDxe/TerminalDxe.inf
 !endif
   UefiPayloadPkg/GraphicsOutputDxe/GraphicsOutputDxe.inf
 !if $(PERFORMANCE_MEASUREMENT_ENABLE)
   MdeModulePkg/Universal/Acpi/FirmwarePerformanceDataTableDxe/FirmwarePerformanceDxe.inf
 !endif
+
+  OpenYardPkg/Feature/PrintAddressDxe/PrintAddressDxe.inf
+
   #
   # SMM Support
   #
@@ -864,7 +928,8 @@
 !elseif $(VARIABLE_SUPPORT) == "SPI"
   MdeModulePkg/Universal/Variable/RuntimeDxe/VariableSmm.inf {
     <LibraryClasses>
-      NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
+#      NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
+      NULL|OpenYardPkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
       NULL|MdeModulePkg/Library/VarCheckHiiLib/VarCheckHiiLib.inf
       NULL|MdeModulePkg/Library/VarCheckPcdLib/VarCheckPcdLib.inf
       NULL|MdeModulePkg/Library/VarCheckPolicyLib/VarCheckPolicyLib.inf
@@ -959,3 +1024,5 @@
   }
 
 !endif
+
+  OpenYardPkg/Application/TestApp/TestApp.inf

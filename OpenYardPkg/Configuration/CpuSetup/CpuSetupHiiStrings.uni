@@ -1,0 +1,53 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver CpuSetupDxe
+//  
+// TODO: Detailed Description of UEFI Driver CpuSetupDxe
+//
+// TODO: Copyright for UEFI Driver CpuSetupDxe
+//  
+// TODO: License for UEFI Driver CpuSetupDxe
+// 
+////
+
+#langdef en-US "English"
+
+#string STR_CPU_SETUP_FORM_SET_TITLE                     #language en-US  "CPU Configuration"
+#string STR_CPU_SETUP_FORM_SET_HELP                      #language en-US  "CPU Configuration"
+#string STR_CPU_SETUP_FORM_TITLE                         #language en-US  "CPU Configuration"
+
+#string STR_EMPTY                                        #language en-US  ""
+#string STR_ENABLE                                       #language en-US  "Enable"
+#string STR_DISABLE                                      #language en-US  "Disable"
+
+#string STR_CPU_HYPERTHREADING                           #language en-US  "Hyperthreading"
+#string STR_CPU_HYPERTHREADING_HELP                      #language en-US  "Enable/disanble CPU Hyperthreading"
+
+
+#string STR_CPU_PCIE_TITLE                           #language en-US  "PCIe Configuration"
+#string STR_CPU_PCIE_TITLE_HELP                      #language en-US  "PCIe Configuration"
+
+
+#string STR_X4X4X4X4                    #language en-US "x4x4x4x4"
+#string STR_X4X4X8                      #language en-US "x4x4x8"
+#string STR_X8X4X4                      #language en-US "x8x4x4"
+#string STR_X8X8                        #language en-US "x8x8"
+#string STR_X16                         #language en-US "x16"
+#string STR_AUTO                        #language en-US "Auto"
+
+#string STR_PCIE_IOU1_PROMPT            #language en-US "PCIe Port 1 Bifurcation"
+#string STR_PCIE_IOU2_PROMPT            #language en-US "PCIe Port 2 Bifurcation"
+#string STR_PCIE_IOU3_PROMPT            #language en-US "PCIe Port 3 Bifurcation"
+#string STR_PCIE_IOU4_PROMPT            #language en-US "PCIe Port 4 Bifurcation"
+#string STR_PCIE_IOU5_PROMPT            #language en-US "PCIe Port 5 Bifurcation"
+#string STR_PCIE_IOU6_PROMPT            #language en-US "PCIe Port 6 Bifurcation"
+#string STR_PCIE_IOU7_PROMPT            #language en-US "PCIe Port 7 Bifurcation"
+#string STR_PCIE_IOU8_PROMPT            #language en-US "PCIe Port 8 Bifurcation"
+#string STR_PCIE_IOU9_PROMPT            #language en-US "PCIe Port 9 Bifurcation"
+#string STR_PCIE_IOU10_PROMPT           #language en-US "PCIe Port 10 Bifurcation"
+
+
+#string STR_PCIE_IOUX_HELP_PROMPT       #language en-US "Selects PCIe port Bifurcation for selected slot(s)"
+
+
+//

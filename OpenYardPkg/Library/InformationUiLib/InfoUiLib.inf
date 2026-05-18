@@ -1,0 +1,103 @@
+## @file
+#  Info Library used by UiApp.
+#
+#  Copyright (c) 2011 - 2018, Intel Corporation. All rights reserved.<BR>
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = InfoUiLib
+  MODULE_UNI_FILE                = InfoUiLib.uni
+  FILE_GUID                      = CCB2DCE1-4FC8-41CB-88C5-D349E134C9FD
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = NULL|DXE_DRIVER UEFI_APPLICATION
+  CONSTRUCTOR                    = InfoUiLibConstructor
+  DESTRUCTOR                     = InfoUiLibDestructor
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64 EBC
+#
+
+[Sources]
+  Info.h
+  InfoVfr.Vfr
+  InfoStrings.uni
+  Info.c
+  Cpu.h
+  Cpu.c
+  Memory.h
+  Memory.c
+  Smbios.h
+  Smbios.c
+  Fru.h
+  Fru.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  OpenYardPkg/OpenYardPkg.dec
+
+[LibraryClasses]
+  UefiRuntimeServicesTableLib
+  ReportStatusCodeLib
+  MemoryAllocationLib
+  UefiLib
+  UefiBootServicesTableLib
+  BaseMemoryLib
+  DebugLib
+  PrintLib
+  HiiLib
+
+[Guids]
+  gEfiIfrTianoGuid                              ## CONSUMES ## GUID (Extended IFR Guid Opcode)
+  gEfiIfrFrontPageGuid                          ## CONSUMES ## GUID
+  gEfiHobListGuid
+
+[Protocols]
+  gEfiHiiConfigAccessProtocolGuid               ## CONSUMES
+  gEfiDevicePathToTextProtocolGuid              ## CONSUMES
+  gEdkiiFormBrowserEx2ProtocolGuid              ## CONSUMES
+  gEfiSmbiosProtocolGuid
+
+[FeaturePcd]
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutRow                         ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn                      ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoHorizontalResolution         ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoVerticalResolution           ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutColumn                 ## CONSUMES ## SOMETIMES_PRODUCES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupConOutRow                    ## CONSUMES ## SOMETIMES_PRODUCES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoHorizontalResolution    ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSetupVideoVerticalResolution      ## CONSUMES
+
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString             ## CONSUMES
+  
+  gOpenYardPkgTokenSpaceGuid.PcdSdrVersionNo
+
+#Smbios Type 1 Strings
+  gOpenYardPkgTokenSpaceGuid.PcdSystemManufacturer
+  gOpenYardPkgTokenSpaceGuid.PcdSystemProductName
+  gOpenYardPkgTokenSpaceGuid.PcdSystemVersion
+  gOpenYardPkgTokenSpaceGuid.PcdSystemSerialNumber
+  gOpenYardPkgTokenSpaceGuid.PcdSystemUuid
+
+#Smbios Type 2 Strings
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardManufacturer
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardProductName
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardVersion
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardSerialNumber
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardAssetTag
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardPartNumber
+
+#Smbios Type 3 Strings
+  gOpenYardPkgTokenSpaceGuid.PcdChassisManufacturer
+  gOpenYardPkgTokenSpaceGuid.PcdChassisVersion
+  gOpenYardPkgTokenSpaceGuid.PcdChassisSerialNumber
+  gOpenYardPkgTokenSpaceGuid.PcdChassisAssetTag
+  gOpenYardPkgTokenSpaceGuid.PcdChassisType
+  gOpenYardPkgTokenSpaceGuid.PcdStrDefault
+  gOpenYardPkgTokenSpaceGuid.PcdChassisPartNumber

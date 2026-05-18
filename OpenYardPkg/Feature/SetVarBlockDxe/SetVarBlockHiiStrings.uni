@@ -1,0 +1,32 @@
+﻿//// @file
+//
+// TODO: Brief Description of UEFI Driver SetVarBlockDxe
+//  
+// TODO: Detailed Description of UEFI Driver SetVarBlockDxe
+//
+// TODO: Copyright for UEFI Driver SetVarBlockDxe
+//  
+// TODO: License for UEFI Driver SetVarBlockDxe
+// 
+////
+
+#langdef en-US "English"
+#langdef ru-RU "Русский"
+
+#string STR_SAMPLE_FORM_SET_TITLE               #language en-US  "SetVariable Block"
+                                                #language ru-RU  "Контроль изменения оборудования"
+#string STR_SAMPLE_FORM_SET_HELP                #language en-US  "Prevent OS from making non-SMM runtime variables."
+                                                #language ru-RU  "Включить/выключить контроль изменения оборудования системы."
+#string STR_SAMPLE_FORM1_TITLE                  #language en-US  "SetVariable Block"
+                                                #language ru-RU  "Контроль изменения оборудования"
+
+#string STR_SUBTITLE_TEXT                       #language en-US "SetVariable Block"
+                                                #language ru-RU "Настройка контроля изменения оборудоавния"
+
+#string STR_CHECK_BOX_PROMPT                    #language en-US "Block SetVariable"
+                                                #language ru-RU "Контролировать изменение оборудования"
+
+#string STR_CHECK_BOX_HELP                      #language en-US "Prevent OS from making non-SMM runtime variables."
+                                                #language ru-RU "Включить контроль изменения оборудования при каждой перезагрузке."
+
+#string STR_EMPTY                               #language en-US " "

@@ -1,0 +1,45 @@
+/** @file
+  TODO: Brief Description of UEFI Libray IpmiTransportLib
+
+  TODO: Detailed Description of UEFI Libray IpmiTransportLib
+
+  TODO: Copyright for UEFI Libray IpmiTransportLib
+
+  TODO: License for UEFI Libray IpmiTransportLib
+
+**/
+
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = IpmiTransportLibNull
+  FILE_GUID                      = 449D0F00-2148-4a43-9836-F10B3980ECF5
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.2
+  LIBRARY_CLASS                  = IpmiTransportLib|UEFI_APPLICATION UEFI_DRIVER DXE_RUNTIME_DRIVER DXE_DRIVER
+
+#
+#  VALID_ARCHITECTURES           = IA32 X64 EBC
+#
+
+[Sources]
+  IpmiTransportLibNull.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  OpenYardPkg/OpenYardPkg.dec
+
+[LibraryClasses]
+  UefiBootServicesTableLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
+  UefiLib
+  DevicePathLib
+  DebugLib
+
+[Protocols]
+#  gEfiDxeIpmiTransportProtocolGuid
+
+[Guids]
+  gEfiSmbiosTableGuid
+  gEfiSmbios3TableGuid

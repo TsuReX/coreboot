@@ -17,8 +17,8 @@ DEFINE FD_SIZE     = 0x00850000
 DEFINE NUM_BLOCKS  = 0x850
 !else
 
-DEFINE FD_SIZE     = 0x00590000
-DEFINE NUM_BLOCKS  = 0x590
+DEFINE FD_SIZE     = 0x00600000
+DEFINE NUM_BLOCKS  = 0x600
 !endif
 
 ################################################################################
@@ -145,6 +145,10 @@ APRIORI DXE {
   INF  UefiPayloadPkg/BlSupportDxe/BlSupportDxe.inf
 }
 
+FILE DRIVER = 85299F8F-F2B9-4487-AF60-231434A5EFF6 {
+	SECTION PE32 = OpenYardPkg/Binaries/uefi_x64_2600.efi
+}
+
 #
 # DXE Phase modules
 #
@@ -216,9 +220,11 @@ INF  MdeModulePkg/Universal/MemoryTest/GenericMemoryTestDxe/GenericMemoryTestDxe
 INF  MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
 !endif
 INF MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
-INF MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
-INF MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
-INF MdeModulePkg/Universal/PlatformDriOverrideDxe/PlatformDriOverrideDxe.inf
+#INF MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+INF OpenYardPkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+#INF MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
+INF OpenYardPkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
+#INF MdeModulePkg/Universal/PlatformDriOverrideDxe/PlatformDriOverrideDxe.inf
 INF MdeModulePkg/Universal/EbcDxe/EbcDxe.inf
 INF UefiPayloadPkg/BlSupportDxe/BlSupportDxe.inf
 
@@ -254,11 +260,15 @@ INF MdeModulePkg/Bus/Isa/Ps2MouseDxe/Ps2MouseDxe.inf
 #
 INF MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
 INF MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
-INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
+#INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
+INF OpenYardPkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
 !if $(DISABLE_SERIAL_TERMINAL) == FALSE
-INF MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
+#INF MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
+INF OpenYardPkg/Universal/Console/TerminalDxe/TerminalDxe.inf
 !endif
 INF UefiPayloadPkg/GraphicsOutputDxe/GraphicsOutputDxe.inf
+
+INF OpenYardPkg/Feature/PrintAddressDxe/PrintAddressDxe.inf
 
 #
 # SCSI/ATA/IDE/DISK Support
@@ -298,7 +308,8 @@ INF MdeModulePkg/Bus/Pci/EhciDxe/EhciDxe.inf
 INF MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
 INF MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
 INF MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
-INF MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+#INF MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+INF OpenYardPkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
 INF MdeModulePkg/Bus/Usb/UsbMouseDxe/UsbMouseDxe.inf
 
 #
@@ -310,9 +321,21 @@ INF  MdeModulePkg/Universal/Acpi/AcpiPlatformDxe/AcpiPlatformDxe.inf
 INF  MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
 !endif
 
+INF IpmiFeaturePkg/GenericIpmi/Dxe/GenericIpmi.inf
+INF IpmiFeaturePkg/IpmiInit/DxeIpmiInit.inf
+
+INF OpenYardPkg/Feature/VarstoreInfoDxe/VarstoreInfoDxe.inf
+INF OpenYardPkg/Feature/HWCheckDxe/HWCheckDxe.inf
+INF OpenYardPkg/Feature/SetVarBlockDxe/SetVarBlockDxe.inf
+
+INF OpenYardPkg/Configuration/CpuSetup/CpuSetupDxe.inf
+INF OpenYardPkg/Configuration/ChipsetSetup/ChipsetSetupDxe.inf
+
 !if $(UNIVERSAL_PAYLOAD) == FALSE
-INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
-INF RuleOverride = UI MdeModulePkg/Application/UiApp/UiApp.inf
+#INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
+INF OpenYardPkg/Universal/BdsDxe/BdsDxe.inf
+#INF RuleOverride = UI MdeModulePkg/Application/UiApp/UiApp.inf
+INF RuleOverride = UI OpenYardPkg/Application/UiApp/UiApp.inf
 INF MdeModulePkg/Application/BootManagerMenuApp/BootManagerMenuApp.inf
 #
 # UEFI network modules

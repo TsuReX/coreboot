@@ -1,0 +1,42 @@
+///** @file
+//
+//  String definitions for BdsPlatform formset.
+//
+//  Copyright (c) 2004 - 2016, Intel Corporation. All rights reserved.<BR>
+//  SPDX-License-Identifier: BSD-2-Clause-Patent
+//
+//**/
+
+/=#
+
+#langdef   en-US "English"
+#langdef   ru-RU "???????"
+
+#string STR_FRONT_PAGE_TITLE           #language en-US  "OYBoot Setup"
+                                       #language ru-RU  "OYBoot Setup"
+
+//#string STR_FRONT_PAGE_TITLE_LEFT      #language en-US  "OY Boot"
+//                                       #language ru-RU  "OY Boot"
+//#string STR_FRONT_PAGE_TITLE_RIGHT     #language en-US  " "
+//                                       #language ru-RU  " "
+
+#string STR_CONTINUE_PROMPT            #language en-US  "Continue"
+                                       #language ru-RU  "??????????"
+#string STR_CONTINUE_HELP              #language en-US  "This selection will direct the system to continue to booting process"
+                                       #language ru-RU  "?????????? ???????? ???????."
+#string STR_LANGUAGE_SELECT            #language en-US  "Select Language"
+                                       #language ru-RU  "????? ?????"
+#string STR_LANGUAGE_SELECT_HELP       #language en-US  "This is the option one adjusts to change the language for the current system"
+                                       #language ru-RU  "??????? ???? ???????"
+#string STR_MISSING_STRING             #language en-US  "Missing String"
+                                       #language ru-RU  "?????? ???????????"
+#string STR_EMPTY_STRING               #language en-US  ""
+                                       #language ru-RU  ""
+#string STR_RESET_STRING               #language en-US  "Reset"
+                                       #language ru-RU  "????????????"
+#string STR_RESET_STRING_HELP          #language en-US  "Reset the current setting."
+                                       #language ru-RU  "????????????? ???????."
+#string STR_TEST_KEY_USED              #language en-US  "WARNING: Test key detected."
+                                       #language ru-RU  "????????: ???????? ???????."
+#string STR_NULL_STRING                #language en-US  " "
+                                       #language ru-RU  " "

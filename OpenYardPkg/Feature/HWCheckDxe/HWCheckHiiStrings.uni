@@ -1,0 +1,67 @@
+﻿//// @file
+//
+// TODO: Brief Description of UEFI Driver HWCheckDxe
+//  
+// TODO: Detailed Description of UEFI Driver HWCheckDxe
+//
+// TODO: Copyright for UEFI Driver HWCheckDxe
+//  
+// TODO: License for UEFI Driver HWCheckDxe
+// 
+////
+
+#langdef en-US "English"
+#langdef ru-RU "Русский"
+
+#string STR_SAMPLE_FORM_SET_TITLE               #language en-US  "Hardware Changes Check"
+                                                #language ru-RU  "Контроль изменения оборудования"
+#string STR_SAMPLE_FORM_SET_HELP                #language en-US  "Enable/Disable check for hardware changes."
+                                                #language ru-RU  "Включить/выключить контроль изменения оборудования системы."
+#string STR_SAMPLE_FORM1_TITLE                  #language en-US  "Hardware Changes Check"
+                                                #language ru-RU  "Контроль изменения оборудования"
+
+#string STR_SUBTITLE_TEXT                       #language en-US "Hardware Check Feature Configuration"
+                                                #language ru-RU "Настройка контроля изменения оборудоавния"
+
+#string STR_CHECK_BOX_PROMPT                    #language en-US "Check For Hardware Changes"
+                                                #language ru-RU "Контролировать изменение оборудования"
+
+#string STR_CHECK_BOX_HELP                      #language en-US "Enable to check for hardware changes on each reboot."
+                                                #language ru-RU "Включить контроль изменения оборудования при каждой перезагрузке."
+
+#string STR_EMPTY                               #language en-US " "
+
+#string STR_SUBMITTED_CALLBACK_TEST_PROMPT      #language en-US "Save Current State"
+                                                #language ru-RU "Сохранить текущее состояние"
+#string STR_SUBMITTED_CALLBACK_TEST_HELP        #language en-US "Save current hardware state for reference."
+                                                #language ru-RU "Сохранить текущее состояние системы как эталон для дальнейшей проверки."
+
+#string STR_CHECK_SYSTEM_HALT_PROMPT            #language en-US "System Halt"
+                                                #language ru-RU "Останавливать систему"
+#string STR_CHECK_SYSTEM_HALT_HELP              #language en-US "Prevent OS from loading if check fails."
+                                                #language ru-RU "Блокировать загрузку ОС, в случае изменения оборудования."
+
+#string STR_CHECK_INFORM_BMC_PROMPT             #language en-US "Inform BMC"
+                                                #language ru-RU "Оповещать BMC"
+#string STR_CHECK_INFORM_BMC_HELP               #language en-US "Send message to BMC if check fails."
+                                                #language ru-RU "Отправить сообщение в BMC, в случае изменения оборудования."
+
+#string STR_CURRENT_SAVED                       #language en-US "Hardware information was saved."
+                                                #language ru-RU "Информация об оборудовании было сохранено."
+#string STR_CURRENT_SAVE_ERROR                  #language en-US "Error. Hardware information not saved."
+                                                #language ru-RU  "Ошибка. Информация об оборудовании не была сохранена."
+
+#string STR_ERROR_SYSTEM_HALT                   #language en-US "System halt because of hardware check error!\n"
+                                                #language ru-RU "Система остановлена из-за изменения оборудования!\n"
+#string STR_ERROR                               #language en-US "Hardware check error:\n"
+                                                #language ru-RU "Ошибки проверки оборудования:\n"
+#string STR_ERROR_NO_REFERENCE                  #language en-US "    No reference found.\n"
+                                                #language ru-RU "    Эталон не найден.\n"
+#string STR_ERROR_CPU                           #language en-US "    CPU mismatch.\n"
+                                                #language ru-RU "    Несоответствие ЦПУ.\n"
+#string STR_ERROR_DIMM                          #language en-US "    DIMM mismatch.\n"
+                                                #language ru-RU "    Несоответствие DIMM.\n"
+#string STR_ERROR_DISKS                         #language en-US "    Disks mismatch.\n"
+                                                #language ru-RU "    Несоответствие дисков.\n"
+#string STR_ERROR_PCI                           #language en-US "    PCI mismatch.\n"
+                                                #language ru-RU "    Несоответствие PCI.\n"

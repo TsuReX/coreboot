@@ -1,0 +1,51 @@
+## @file
+#  TODO: Brief Description of UEFI Driver PrintAddressDxe
+#  
+#  TODO: Detailed Description of UEFI Driver PrintAddressDxe
+#
+#  TODO: Copyright for UEFI Driver PrintAddressDxe
+#  
+#  TODO: License for UEFI Driver PrintAddressDxe
+#  
+##
+
+[Defines]
+  INF_VERSION               = 0x00010005
+  BASE_NAME                 = PrintAddressDxe
+  FILE_GUID                 = 08af2dcf-56bd-11ee-ab17-8038fba9d72a
+  MODULE_TYPE               = DXE_DRIVER
+  VERSION_STRING            = 1.0
+  ENTRY_POINT               = PrintAddressDxeEntryPoint
+  UNLOAD_IMAGE              = PrintAddressDxeUnload
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  OpenYardPkg/OpenYardPkg.dec
+
+[Sources]
+  PrintAddressDxe.h
+  PrintAddressDxe.c
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
+  UefiLib
+  DebugLib
+  PrintLib
+  PcdLib
+
+[Protocols]
+  gEfiSimpleTextOutProtocolGuid
+
+[Guids]
+
+[Depex]
+  gEfiSimpleTextOutProtocolGuid AND
+  gEfiGraphicsOutputProtocolGuid
+
+[Pcd]
+  gOpenYardPkgTokenSpaceGuid.PcdBmcIpAddress

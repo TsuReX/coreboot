@@ -1,0 +1,179 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver CpuSetupDxe
+//  
+// TODO: Detailed Description of UEFI Driver CpuSetupDxe
+//
+// TODO: Copyright for UEFI Driver CpuSetupDxe
+//  
+// TODO: License for UEFI Driver CpuSetupDxe
+//
+////
+
+#include "CpuSetupHii.h"
+#include <Uefi/UefiMultiPhase.h>
+#include <Guid/SetupVariable.h>
+
+#define FORM_CPU_SETUP_ID        0x1001
+
+
+formset guid     = CPU_SETUP_FORM_SET_GUID,
+  title    = STRING_TOKEN(STR_CPU_SETUP_FORM_SET_TITLE),
+  help     = STRING_TOKEN(STR_CPU_SETUP_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_CONFIG_FORMSET_GUID,
+  subclass = 0,
+
+  efivarstore OY_SETUP_CONFIGURATION,  // This is the data structure type
+  attribute = EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE,
+  //varid = CONFIGURATION_VARSTORE_ID,      // Optional VarStore ID
+  name  = OYSetup,   // Define referenced name in vfr
+  guid  = gEfiOYSetupVariableGuid;    // GUID of this buffer storage
+
+  form formid = FORM_CPU_SETUP_ID, title = STRING_TOKEN(STR_CPU_SETUP_FORM_TITLE);
+  subtitle text = STRING_TOKEN(STR_CPU_SETUP_FORM_TITLE);
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  oneof varid  = OYSetup.ProcessorHyperThreadingDisable,
+           prompt      = STRING_TOKEN(STR_CPU_HYPERTHREADING),
+           help        = STRING_TOKEN(STR_CPU_HYPERTHREADING_HELP),
+           flags       = RESET_REQUIRED,
+           default value = 0x00,
+           option text = STRING_TOKEN(STR_ENABLE), value = 0x00, flags = 0;
+           option text = STRING_TOKEN(STR_DISABLE), value = 0x01, flags = 0;
+  endoneof;
+  
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+    oneof varid = OYSetup.ConfigIOU0[0],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU1_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU1[0],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU2_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU2[0],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU3_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU3[0],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU4_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU4[0],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU5_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU0[1],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU6_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU1[1],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU7_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU2[1],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU8_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU3[1],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU9_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+    
+    oneof varid = OYSetup.ConfigIOU4[1],
+               prompt  = STRING_TOKEN(STR_PCIE_IOU10_PROMPT),
+               help    = STRING_TOKEN(STR_PCIE_IOUX_HELP_PROMPT),
+               flags       = RESET_REQUIRED,
+               default value = IIO_BIFURCATE_AUTO,
+               option text = STRING_TOKEN(STR_AUTO),     value = IIO_BIFURCATE_AUTO, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X4X4), value = IIO_BIFURCATE_x4x4x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X4X4X8),   value = IIO_BIFURCATE_x4x4xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X8X4X4),   value = IIO_BIFURCATE_xxx8x4x4, flags = 0;
+               option text = STRING_TOKEN(STR_X8X8),     value = IIO_BIFURCATE_xxx8xxx8, flags = 0;
+               option text = STRING_TOKEN(STR_X16),      value = IIO_BIFURCATE_xxxxxx16, flags = 0;
+    endoneof;
+  
+  endform;
+
+endformset;

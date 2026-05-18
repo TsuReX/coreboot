@@ -1,0 +1,101 @@
+## @file
+#  TODO: Brief Description of Package OpenYardPkg
+#  
+#  TODO: Detailed Description of Package OpenYardPkg
+#
+#  TODO: Copyright for Package OpenYardPkg
+#  
+#  TODO: License for Package OpenYardPkg
+#  
+##
+
+[Defines]
+  DEC_SPECIFICATION = 0x00010005
+  PACKAGE_NAME      = OpenYardPkg
+  PACKAGE_GUID      = 8554d18d-fc15-4994-8ec4-6d82cf302300
+  PACKAGE_VERSION   = 1.0
+
+[Includes]
+  Include
+
+[LibraryClasses]
+
+[Protocols]
+
+[Guids]
+  gOpenYardPkgTokenSpaceGuid            = { 0x1e21c327, 0xd40, 0x40f2, { 0x9f, 0x2, 0x3a, 0x9b, 0x78, 0x38, 0xaa, 0x6b } }
+  
+  gEfiHiiPlatformConfigFormsetGuid = { 0x93039971, 0x8545, 0x4b04, { 0xb4, 0x5e, 0x32, 0xeb, 0x83, 0x26, 0x15, 0x00 }}
+  
+  gEfiHiiPlatformSecurityFormsetGuid = { 0x93039971, 0x8545, 0x4b04, { 0xb4, 0x5e, 0x32, 0xeb, 0x83, 0x26, 0x15, 0x01 }}
+  
+  gEfiOYSetupVariableGuid         = { 0xD13BFF13, 0x6225, 0x44C4, {0xBE, 0x3F, 0x29, 0xE8, 0x32, 0xE6, 0x87, 0x4A }}
+
+[PcdsFixedAtBuild]
+  ## Default string.
+  gOpenYardPkgTokenSpaceGuid.PcdStrDefault|L"To be filled by O.E.M."|VOID*|0x40000031
+
+[PcdsDynamic,PcdsDynamicEx]
+  gOpenYardPkgTokenSpaceGuid.PcdBmcIpAddress|{0x7F, 0x00, 0x00, 0x01}|VOID*|0x90000003
+
+  ## Smbios Type 1 Strings - These strings will be updated at runtime by IpmiRedirFru driver.
+  ## System Manufacturer
+  gOpenYardPkgTokenSpaceGuid.PcdSystemManufacturer|L"To be filled by O.E.M.                                            "|VOID*|0x40000011
+
+  ## System Product Name
+  gOpenYardPkgTokenSpaceGuid.PcdSystemProductName|L"To be filled by O.E.M.                                            "|VOID*|0x40000012
+
+  ## System Version
+  gOpenYardPkgTokenSpaceGuid.PcdSystemVersion|L"To be filled by O.E.M.                                            "|VOID*|0x40000013
+
+  ## System Serial Number
+  gOpenYardPkgTokenSpaceGuid.PcdSystemSerialNumber|L"To be filled by O.E.M.                                            "|VOID*|0x40000014
+
+  ## System UUID (128 bit)
+  gOpenYardPkgTokenSpaceGuid.PcdSystemUuid|{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}|VOID*|0x40000015
+
+  ## Smbios Type 2 Strings - These strings will be updated at runtime by IpmiRedirFru driver.
+  ## Base Board Manufacturer
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardManufacturer|L"To be filled by O.E.M.                                            "|VOID*|0x40000017
+
+  ## Base Board Product Name
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardProductName|L"To be filled by O.E.M.                                            "|VOID*|0x40000018
+
+  ## Base Board Version
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardVersion|L"To be filled by O.E.M.                                            "|VOID*|0x40000019
+
+  ## Base Board Serial Number
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardSerialNumber|L"To be filled by O.E.M.                                            "|VOID*|0x4000001A
+
+  ## Base Board Asset Tag
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardAssetTag|L"To be filled by O.E.M.                                            "|VOID*|0x4000001B
+
+  ## Smbios Type 3 Strings - These strings will be updated at runtime by IpmiRedirFru driver.
+  ## Chassis Manufacturer
+  gOpenYardPkgTokenSpaceGuid.PcdChassisManufacturer|L"To be filled by O.E.M.                                            "|VOID*|0x40000021
+
+  ## Chassis Version
+  gOpenYardPkgTokenSpaceGuid.PcdChassisVersion|L"To be filled by O.E.M.                                            "|VOID*|0x40000022
+
+  ## Chassis Serial Number
+  gOpenYardPkgTokenSpaceGuid.PcdChassisSerialNumber|L"To be filled by O.E.M.                                            "|VOID*|0x40000023
+
+  ## Chassis Asset Tag
+  gOpenYardPkgTokenSpaceGuid.PcdChassisAssetTag|L"To be filled by O.E.M.                                            "|VOID*|0x40000024
+
+  ## Chassis Type
+  #  Default value is Unknown (2).
+  #  Please refer MdePkg/Include/IndustryStandard/SmBios.h for other values.
+  gOpenYardPkgTokenSpaceGuid.PcdChassisType|0x02|UINT8|0x40000025
+
+  gOpenYardPkgTokenSpaceGuid.PcdBaseBoardPartNumber|L"To be filled by O.E.M.                                            "|VOID*|0x40000026
+  gOpenYardPkgTokenSpaceGuid.PcdChassisPartNumber|L"To be filled by O.E.M.                                            "|VOID*|0x40000027
+  
+  ## Sdr Version Number
+  gOpenYardPkgTokenSpaceGuid.PcdSdrVersionNo|L"Unknown"|VOID*|0x4000002F
+
+[PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
+  gOpenYardPkgTokenSpaceGuid.PcdEnableShellBootOption|1|BOOLEAN|0x10000001
+  gOpenYardPkgTokenSpaceGuid.PcdEnableNetworkBootOption|1|BOOLEAN|0x10000002
+
+  gOpenYardPkgTokenSpaceGuid.PcdStatusCodeUsePostCode|TRUE|BOOLEAN|0x90000004

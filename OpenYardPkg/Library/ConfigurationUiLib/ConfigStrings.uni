@@ -1,0 +1,29 @@
+﻿///** @file
+//
+// Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
+// SPDX-License-Identifier: BSD-2-Clause-Patent
+//
+// Module Name:
+//
+//   ConfigStrings.uni
+//
+// Abstract:
+//
+//   String definitions for Boot Manager formset.
+//
+// Revision History:
+//
+// --*/
+
+/=#
+#langdef   en-US "English"
+#langdef   ru-RU "Русский"
+
+#string STR_CONFIG_TITLE                 #language en-US  "System Configuration"
+                                         #language ru-RU  "Конфигурация системы"
+#string STR_CONFIG_HELP                  #language en-US  "This selection will take you to the system configuration"
+                                         #language ru-RU  "Просмотр и изменение конфигурации системы"
+
+#string STR_MISSING_STRING             #language en-US  "Missing String"
+#string STR_EMPTY_STRING               #language en-US  ""
+#string STR_EXIT_STRING                #language en-US  "Press ESC to exit."

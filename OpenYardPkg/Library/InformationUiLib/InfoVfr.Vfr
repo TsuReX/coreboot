@@ -1,0 +1,184 @@
+///** @file
+//
+//  Boot Manager formset.
+//
+//  Copyright (c) 2004 - 2015, Intel Corporation. All rights reserved.<BR>
+//  SPDX-License-Identifier: BSD-2-Clause-Patent
+//
+//**/
+#define FORMSET_GUID  { 0x847bc3fe, 0xb974, 0x446d, 0x94, 0x49, 0x5a, 0xd5, 0x41, 0x2e, 0x99, 0x30 }
+
+#define FORM_INFO_INFO_ID       0x1001
+#define FORM_MEMORY_INFO_ID     0x1002
+#define FORM_FRU_INFO_ID        0x1003
+
+#define MEM_TOPOLOGY_START_LABEL        0x00
+#define MEM_TOPOLOGY_END_LABEL          0x01
+
+#define CPU_START_LABEL                 0x02
+#define CPU_END_LABEL                   0x03
+
+formset
+  guid      = FORMSET_GUID,
+  title     = STRING_TOKEN(STR_MN_BANNER),
+  help      = STRING_TOKEN(STR_INFO_HELP),
+  classguid = gEfiIfrFrontPageGuid,
+
+  form formid = FORM_INFO_INFO_ID,
+       title  = STRING_TOKEN(STR_MN_BANNER);
+
+    grayoutif TRUE;
+    text
+      help   = STRING_TOKEN(STR_EMPTY_STRING),
+      text   = STRING_TOKEN(STR_COMPUTER_MODEL),
+        text   = STRING_TOKEN(STR_SYS_PROD_NAME_VAL);
+
+    subtitle text = STRING_TOKEN(STR_EMPTY_STRING);
+
+      label CPU_START_LABEL;
+      label CPU_END_LABEL;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY_STRING);
+
+      text
+        help   = STRING_TOKEN(STR_EMPTY_STRING),
+        text   = STRING_TOKEN(STR_BIOS_VERSION),
+          text   = STRING_TOKEN(STR_BIOS_VERSION_VALUE),
+          flags   = 0x00, key = 0x00;
+    endif;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY_STRING);
+
+    date 
+        name    = Date,
+        prompt  = STRING_TOKEN(STR_DATE),
+        help    = STRING_TOKEN(STR_DATE_HELP),
+        flags   = STORAGE_TIME,
+        default = 2014/1/1,
+    enddate;
+
+    time 
+        name    = Time, 
+        prompt  = STRING_TOKEN(STR_TIME), 
+        help    = STRING_TOKEN(STR_TIME_HELP), 
+        flags   = STORAGE_TIME,
+        default = 0:0:0, 
+    endtime;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY_STRING);
+
+    goto FORM_MEMORY_INFO_ID,
+            prompt = STRING_TOKEN(STR_FORM_MEMORY_INFO_TITLE),
+            help = STRING_TOKEN(STR_FORM_MEMORY_INFO_HELP),
+            flags = INTERACTIVE,
+            key = FORM_MEMORY_INFO_ID;
+			
+    goto FORM_FRU_INFO_ID,
+            prompt = STRING_TOKEN(STR_FORM_FRU_INFO_TITLE),
+            help = STRING_TOKEN(STR_FORM_FRU_INFO_HELP),
+            flags = INTERACTIVE,
+            key = FORM_FRU_INFO_ID;
+
+  endform;
+
+
+  form formid = FORM_MEMORY_INFO_ID,
+       title  = STRING_TOKEN(STR_FORM_MEMORY_INFO_TITLE);
+
+    grayoutif TRUE;
+
+      label MEM_TOPOLOGY_START_LABEL;
+      label MEM_TOPOLOGY_END_LABEL;
+
+    endif;
+
+  endform;
+  
+  form formid = FORM_FRU_INFO_ID,
+       title  = STRING_TOKEN(STR_FORM_FRU_INFO_TITLE);
+
+    grayoutif TRUE;
+
+                text help  = STRING_TOKEN (STR_SYS_MANUFACTURER_HELP),
+                    text  = STRING_TOKEN (STR_SYS_MANUFACTURER),
+                    text  = STRING_TOKEN (STR_SYS_MANUFACTURER_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_SYS_PROD_NAME_HELP),
+                    text  = STRING_TOKEN (STR_SYS_PROD_NAME),
+                    text  = STRING_TOKEN (STR_SYS_PROD_NAME_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_SYS_VERSION_HELP),
+                    text  = STRING_TOKEN (STR_SYS_VERSION),
+                    text  = STRING_TOKEN (STR_SYS_VERSION_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_SYS_SERIAL_NUM_HELP),
+                    text  = STRING_TOKEN (STR_SYS_SERIAL_NUM),
+                    text  = STRING_TOKEN (STR_SYS_SERIAL_NUM_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_BRD_MANUFACTURER_HELP),
+                    text  = STRING_TOKEN (STR_BRD_MANUFACTURER),
+                    text  = STRING_TOKEN (STR_BRD_MANUFACTURER_VAL),
+                    flags = 0,
+                    key   = 0; 
+            
+                text help  = STRING_TOKEN (STR_BRD_PROD_NAME_HELP),
+                    text  = STRING_TOKEN (STR_BRD_PROD_NAME),
+                    text  = STRING_TOKEN (STR_BRD_PROD_NAME_VAL),
+                    flags = 0,
+                    key   = 0;
+                     
+                text help  = STRING_TOKEN (STR_BRD_PART_NUM_HELP),
+                    text  = STRING_TOKEN (STR_BRD_PART_NUM),
+                    text  = STRING_TOKEN (STR_BRD_PART_NUM_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_BRD_SERIAL_NUM_HELP),
+                    text  = STRING_TOKEN (STR_BRD_SERIAL_NUM),
+                    text  = STRING_TOKEN (STR_BRD_SERIAL_NUM_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_CHA_MANUFACTURER_HELP),
+                    text  = STRING_TOKEN (STR_CHA_MANUFACTURER),
+                    text  = STRING_TOKEN (STR_CHA_MANUFACTURER_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_CHA_PART_NUM_HELP),
+                    text  = STRING_TOKEN (STR_CHA_PART_NUM),
+                    text  = STRING_TOKEN (STR_CHA_PART_NUM_VAL),
+                    flags = 0,
+                    key   = 0;
+            
+                text help  = STRING_TOKEN (STR_CHA_SERIAL_NUM_HELP),
+                    text  = STRING_TOKEN (STR_CHA_SERIAL_NUM),
+                    text  = STRING_TOKEN (STR_CHA_SERIAL_NUM_VAL),
+                    flags = 0,
+                    key   = 0;     
+            
+                //text help  = STRING_TOKEN (STR_SDR_VERSION_HELP),
+                //    text  = STRING_TOKEN (STR_SDR_VERSION),
+                //    text  = STRING_TOKEN (STR_SDR_VERSION_VAL),
+                //    flags = 0,
+                //    key   = 0;
+                //
+                //text help  = STRING_TOKEN (STR_SYSTEM_UUID_HELP),
+                //    text  = STRING_TOKEN (STR_SYSTEM_UUID),
+                //    text  = STRING_TOKEN (STR_SYSTEM_UUID_VAL),
+                //    flags = 0,
+                //    key   = 0;
+
+    endif;
+
+  endform;
+
+endformset;

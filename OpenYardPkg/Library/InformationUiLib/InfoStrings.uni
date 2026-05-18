@@ -1,0 +1,157 @@
+///** @file
+//
+// Copyright (c) 2007 - 2018, Intel Corporation. All rights reserved.<BR>
+// SPDX-License-Identifier: BSD-2-Clause-Patent
+//
+// Module Name:
+//
+//   InfoStrings.uni
+//
+// Abstract:
+//
+//   String definitions for Boot Manager formset.
+//
+// Revision History:
+//
+// --*/
+
+/=#
+#langdef   en-US "English"
+#langdef   ru-RU "???????"
+
+#string STR_MN_BANNER                  #language en-US  "System Information"
+                                       #language ru-RU  "?????????? ? ???????"
+#string STR_INFO_HELP                  #language en-US  "This selection will take you to the system information"
+                                       #language ru-RU  "???????? ?????????? ? ???????"
+
+
+#string STR_COMPUTER_MODEL             #language en-US  "Server Model"
+                                       #language ru-RU  "?????? ???????"
+
+#string STR_MEMORY_SIZE                #language en-US  "Memory Size"
+                                       #language ru-RU  "????? ??????"
+#string STR_BIOS_VERSION               #language en-US  "BIOS Version"
+                                       #language ru-RU  "?????? BIOS"
+
+#string STR_COMPUTER_MODEL_VALUE   #language en-US  " "
+
+#string STR_MEMORY_SIZE_VALUE      #language en-US  " "
+#string STR_BIOS_VERSION_VALUE     #language en-US  " "
+
+#string STR_MISSING_STRING          #language en-US  " "
+#string STR_EMPTY_STRING            #language en-US  " "
+
+#string STR_FORM_MEMORY_INFO_TITLE    #language en-US  "Memory topology"
+                                      #language ru-RU  "????????? ??????"
+#string STR_FORM_MEMORY_INFO_HELP     #language en-US  "Show extended memory info"
+                                      #language ru-RU  "???????? ????????? ?????????? ? ??????"
+
+#string STR_FORM_FRU_INFO_TITLE       #language en-US  "Fru information"
+                                      #language ru-RU  "?????????? Fru"
+#string STR_FORM_FRU_INFO_HELP        #language en-US  "Show Fru information"
+                                      #language ru-RU  "???????? ?????????? Fru"
+
+#string STR_DATE                      #language en-US  "System date"
+                                      #language ru-RU  "???? ???????"
+#string STR_DATE_HELP                 #language en-US  "Change system date"
+                                      #language ru-RU  "???????? ? ????????? ????"
+#string STR_TIME                      #language en-US  "System time"
+                                      #language ru-RU  "????? ???????"
+#string STR_TIME_HELP                 #language en-US  "Change system time"
+                                      #language ru-RU  "???????? ? ????????? ???????"
+									  
+// -------------------- FRU ---------------------
+
+#string STR_SYS_MANUFACTURER            #language en-US  "System Manufacturer"
+                                        #language ru-RU  "????????????? ???????"
+#string STR_SYS_MANUFACTURER_VAL        #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_SYS_MANUFACTURER_HELP       #language en-US  "System Manufacturer"
+                                        #language ru-RU  "????????????? ???????"
+
+#string STR_SYS_PROD_NAME               #language en-US  "System Product Name"
+                                        #language ru-RU  "???????? ???????"
+#string STR_SYS_PROD_NAME_VAL           #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_SYS_PROD_NAME_HELP          #language en-US  "System Product Name"
+                                        #language ru-RU  "???????? ???????"
+
+#string STR_SYS_VERSION                 #language en-US  "System Version"
+                                        #language ru-RU  "?????? ???????"
+#string STR_SYS_VERSION_VAL             #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_SYS_VERSION_HELP            #language en-US  "System Version"
+                                        #language ru-RU  "?????? ???????"
+
+#string STR_SYS_SERIAL_NUM              #language en-US  "System Serial Number"
+                                        #language ru-RU  "???????? ????? ???????"
+#string STR_SYS_SERIAL_NUM_VAL          #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_SYS_SERIAL_NUM_HELP         #language en-US  "System Serial Number"
+                                        #language ru-RU  "???????? ????? ???????"
+
+#string STR_BRD_MANUFACTURER            #language en-US  "Board Manufacturer"
+                                        #language ru-RU  "????????????? ?????"
+#string STR_BRD_MANUFACTURER_VAL        #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_BRD_MANUFACTURER_HELP       #language en-US  "Board Manufacturer"
+                                        #language ru-RU  "????????????? ?????"
+
+#string STR_BRD_PROD_NAME               #language en-US  "Board Product Name"
+                                        #language ru-RU  "???????? ?????"
+#string STR_BRD_PROD_NAME_VAL           #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_BRD_PROD_NAME_HELP          #language en-US  "Board Product Name"
+                                        #language ru-RU  "???????? ?????"
+
+#string STR_BRD_PART_NUM                #language en-US  "Board Part Number"
+                                        #language ru-RU  "????? ?????"
+#string STR_BRD_PART_NUM_VAL            #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_BRD_PART_NUM_HELP           #language en-US  "Board Part Number"
+                                        #language ru-RU  "????? ?????"
+
+#string STR_BRD_SERIAL_NUM              #language en-US  "Board Serial Number"
+                                        #language ru-RU  "???????? ????? ?????"
+#string STR_BRD_SERIAL_NUM_VAL          #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_BRD_SERIAL_NUM_HELP         #language en-US  "Board Serial Number"
+                                        #language ru-RU  "???????? ????? ?????"
+
+#string STR_CHA_MANUFACTURER            #language en-US  "Chassis Manufacturer"
+                                        #language ru-RU  "????????????? ???????"
+#string STR_CHA_MANUFACTURER_VAL        #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_CHA_MANUFACTURER_HELP       #language en-US  "Chassis Manufacturer"
+                                        #language ru-RU  "????????????? ???????"
+
+#string STR_CHA_PART_NUM                #language en-US  "Chassis Part Number"
+                                        #language ru-RU  "????? ???????"
+#string STR_CHA_PART_NUM_VAL            #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_CHA_PART_NUM_HELP           #language en-US  "Chassis Part Number"
+                                        #language ru-RU  "????? ???????"
+
+#string STR_CHA_SERIAL_NUM              #language en-US  "Chassis Serial Number"
+                                        #language ru-RU  "???????? ????? ???????"
+#string STR_CHA_SERIAL_NUM_VAL          #language en-US  "-"
+                                        #language ru-RU  "-"
+#string STR_CHA_SERIAL_NUM_HELP         #language en-US  "Chassis Serial Number"
+                                        #language ru-RU  "???????? ????? ???????"
+
+#string STR_SDR_VERSION                 #language en-US  "SDR Version"
+                                        #language ru-RU  "?????? SDR"
+#string STR_SDR_VERSION_HELP            #language en-US  "Version of Sensor Data Records."
+                                        #language ru-RU  "?????? SDR (Sensor Data Records)."
+#string STR_SDR_VERSION_VAL             #language en-US  "-"
+                                        #language ru-RU  "-"
+
+#string STR_SYSTEM_UUID                 #language en-US  "System UUID"
+                                        #language ru-RU  "UUID ???????"
+#string STR_SYSTEM_UUID_HELP            #language en-US  "System Unique ID."
+                                        #language ru-RU  "?????????? ????????????? ???????."
+#string STR_SYSTEM_UUID_VAL             #language en-US  "-"
+                                        #language ru-RU  "-"
+// ----------------------------------------------
+
+#string STR_FORM_MEMORY_MANUFACTURER      #language en-US  " "

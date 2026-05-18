@@ -1,0 +1,56 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver VarstoreInfoDxe
+//  
+// TODO: Detailed Description of UEFI Driver VarstoreInfoDxe
+//
+// TODO: Copyright for UEFI Driver VarstoreInfoDxe
+//  
+// TODO: License for UEFI Driver VarstoreInfoDxe
+//
+////
+
+#include "VarstoreInfoHii.h"
+
+formset guid     = VARSTORE_INFO_FORM_SET_GUID,
+  title    = STRING_TOKEN(STR_SAMPLE_FORM_SET_TITLE),
+  help     = STRING_TOKEN(STR_SAMPLE_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_SETUP_FORMSET_GUID,
+  subclass = 0,
+
+  form formid = 1, title = STRING_TOKEN(STR_SAMPLE_FORM1_TITLE);
+    subtitle text = STRING_TOKEN(STR_SUBTITLE_TEXT);
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+
+    suppressif TRUE;
+      text
+        help   = STRING_TOKEN(STR_EMPTY),
+        text   = STRING_TOKEN(STR_EMPTY),
+        flags  = INTERACTIVE,
+        key    = KEY_UPDATE;
+      endif;
+
+    //MaximumVariableStorageSize
+
+    text
+      help   = STRING_TOKEN(MAXIMUM_VARIABLE_STORAGE_SIZE_STRING_HELP),       // Help string
+      text   = STRING_TOKEN(MAXIMUM_VARIABLE_STORAGE_SIZE_STRING),      // Prompt string
+        text   = STRING_TOKEN(MAXIMUM_VARIABLE_STORAGE_SIZE_STRING2);   // TextTwo
+
+    // RemainingVariableStorageSize
+
+    text
+      help   = STRING_TOKEN(REMAINING_VARIABLE_STORAGE_SIZE_HELP),       // Help string
+      text   = STRING_TOKEN(REMAINING_VARIABLE_STORAGE_SIZE),      // Prompt string
+        text   = STRING_TOKEN(REMAINING_VARIABLE_STORAGE_SIZE2);   // TextTwo
+
+    // MaximumVariableSize
+
+    text
+      help   = STRING_TOKEN(MAXIMUM_VARIABLE_SIZE_HELP),       // Help string
+      text   = STRING_TOKEN(MAXIMUM_VARIABLE_SIZE),      // Prompt string
+        text   = STRING_TOKEN(MAXIMUM_VARIABLE_SIZE2);   // TextTwo
+
+  endform;
+
+endformset;

@@ -1,0 +1,36 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver SetVarBlockDxe
+//  
+// TODO: Detailed Description of UEFI Driver SetVarBlockDxe
+//
+// TODO: Copyright for UEFI Driver SetVarBlockDxe
+//  
+// TODO: License for UEFI Driver SetVarBlockDxe
+//
+////
+
+#include "SetVarBlockNVStore.h"
+
+formset guid     = SET_VAR_BLOCK_FORM_SET_GUID,
+  title    = STRING_TOKEN(STR_SAMPLE_FORM_SET_TITLE),
+  help     = STRING_TOKEN(STR_SAMPLE_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_SECURITY_FORMSET_GUID,
+  subclass = 0,
+
+  varstore SET_VAR_BLOCK_CONFIGURATION,  // This is the data structure type
+  //varid = CONFIGURATION_VARSTORE_ID,      // Optional VarStore ID
+  name  = SetVarBlockConfig,                  // Define referenced name in vfr
+  guid  = SET_VAR_BLOCK_VAR_GUID;    // GUID of this buffer storage
+
+  form formid = 1, title = STRING_TOKEN(STR_SAMPLE_FORM1_TITLE);
+    subtitle text = STRING_TOKEN(STR_SUBTITLE_TEXT);
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+
+    checkbox varid   = SetVarBlockConfig.SetVarBlockEnable,
+                 prompt   = STRING_TOKEN(STR_CHECK_BOX_PROMPT),
+                 help     = STRING_TOKEN(STR_CHECK_BOX_HELP),
+    endcheckbox;
+  endform;
+
+endformset;

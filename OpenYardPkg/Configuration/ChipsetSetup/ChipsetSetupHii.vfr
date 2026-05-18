@@ -1,0 +1,499 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver ChipsetSetupDxe
+//  
+// TODO: Detailed Description of UEFI Driver ChipsetSetupDxe
+//
+// TODO: Copyright for UEFI Driver ChipsetSetupDxe
+//  
+// TODO: License for UEFI Driver ChipsetSetupDxe
+//
+////
+
+#include <Guid/SetupVariable.h>
+#include <Uefi/UefiMultiPhase.h>
+
+#include "ChipsetSetupHii.h"
+
+#define FORM_CHIPSET_SETUP_ID        0x1001
+#define FORM_USB_SETUP_ID            0x1002
+#define FORM_SATA_0_SETUP_ID          0x1003
+#define FORM_SATA_1_SETUP_ID          0x1004
+#define FORM_SATA_2_SETUP_ID          0x1005
+
+
+formset guid     = CHIPSET_SETUP_FORM_SET_GUID,
+  title    = STRING_TOKEN(STR_CHIPSET_SETUP_FORM_SET_TITLE),
+  help     = STRING_TOKEN(STR_CHIPSET_SETUP_FORM_SET_HELP),
+  classguid = EFI_HII_PLATFORM_CONFIG_FORMSET_GUID,
+  subclass = 0,
+
+  efivarstore OY_SETUP_CONFIGURATION,  // This is the data structure type
+  attribute = EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_NON_VOLATILE,
+  //varid = CONFIGURATION_VARSTORE_ID,      // Optional VarStore ID
+  name  = OYSetup,   // Define referenced name in vfr
+  guid  = gEfiOYSetupVariableGuid;    // GUID of this buffer storage
+
+  form formid = FORM_CHIPSET_SETUP_ID, title = STRING_TOKEN(STR_CHIPSET_SETUP_FORM_TITLE);
+  subtitle text = STRING_TOKEN(STR_CHIPSET_SETUP_FORM_TITLE);
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+    oneof varid  = OYSetup.StateAfterG3,
+           prompt      = STRING_TOKEN(STR_PCH_POWER_STATE),
+           help        = STRING_TOKEN(STR_PCH_POWER_STATE_HELP),
+           flags       = RESET_REQUIRED,
+           default value = 0x01,
+           option text = STRING_TOKEN(STR_PCH_POWER_STATE_0), value = 0x00, flags = 0;
+           option text = STRING_TOKEN(STR_PCH_POWER_STATE_1), value = 0x01, flags = 0;
+           option text = STRING_TOKEN(STR_PCH_POWER_STATE_FF), value = 0xFF, flags = 0;
+           option text = STRING_TOKEN(STR_PCH_POWER_STATE_FE), value = 0xFE, flags = 0;
+  endoneof;
+  
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+    goto FORM_USB_SETUP_ID,
+            prompt = STRING_TOKEN(STR_USB_SETUP_TITLE),
+            help = STRING_TOKEN(STR_USB_SETUP_HELP),
+            key = FORM_USB_SETUP_ID;
+
+    goto FORM_SATA_0_SETUP_ID,
+            prompt = STRING_TOKEN(STR_SATA_0_SETUP_TITLE),
+            help = STRING_TOKEN(STR_SATA_0_SETUP_HELP),
+            key = FORM_SATA_0_SETUP_ID;
+			
+    goto FORM_SATA_1_SETUP_ID,
+            prompt = STRING_TOKEN(STR_SATA_1_SETUP_TITLE),
+            help = STRING_TOKEN(STR_SATA_1_SETUP_HELP),
+            key = FORM_SATA_1_SETUP_ID;
+
+    goto FORM_SATA_2_SETUP_ID,
+            prompt = STRING_TOKEN(STR_SATA_2_SETUP_TITLE),
+            help = STRING_TOKEN(STR_SATA_2_SETUP_HELP),
+            key = FORM_SATA_2_SETUP_ID;
+
+  endform;
+  
+  // USB CONFIGURATION FORM
+
+  form formid = FORM_USB_SETUP_ID, title = STRING_TOKEN(STR_USB_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_USB_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  oneof varid  = OYSetup.PchUsbFilter,
+           prompt      = STRING_TOKEN(STR_USB_SETUP_FILTER),
+           help        = STRING_TOKEN(STR_USB_SETUP_FILTER_HELP),
+           flags       = RESET_REQUIRED,
+           default value = 0,
+           option text = STRING_TOKEN(STR_USB_SETUP_FILTER_0), value = 0x0, flags = 0;
+           option text = STRING_TOKEN(STR_USB_SETUP_FILTER_1), value = 0x1, flags = 0;
+  endoneof;
+
+  checkbox varid   = OYSetup.PchUsbReadOnly,
+           prompt   = STRING_TOKEN(STR_USB_SETUP_READONLY),
+           help     = STRING_TOKEN(STR_USB_SETUP_READONLY_HELP),
+           flags    = RESET_REQUIRED,
+           key      = 0,
+           default = FALSE,
+  endcheckbox;
+  
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  subtitle text = STRING_TOKEN(STR_USB_SETUP_FRONT_PANEL);
+  
+    checkbox varid   = OYSetup.PchUsbHsPort[0],
+               prompt   = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_0),
+               help     = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_0_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+  
+    checkbox varid   = OYSetup.PchUsbHsPort[1],
+               prompt   = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_1),
+               help     = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_1_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+    
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+  subtitle text = STRING_TOKEN(STR_USB_SETUP_REAR_PANEL);
+  
+    checkbox varid   = OYSetup.PchUsbHsPort[2],
+               prompt   = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_2),
+               help     = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_2_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+  
+    checkbox varid   = OYSetup.PchUsbHsPort[3],
+               prompt   = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_3),
+               help     = STRING_TOKEN(STR_USB_SETUP_PORT_ENABLE_3_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+endform;
+
+  // SATA0 CONFIGURATION FORM
+  
+  form formid = FORM_SATA_0_SETUP_ID, title = STRING_TOKEN(STR_SATA_0_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  oneof varid  = OYSetup.SataInterfaceMode[0],
+           prompt      = STRING_TOKEN(STR_SATA_0_SETUP_MODE),
+           help        = STRING_TOKEN(STR_SATA_0_SETUP_MODE_HELP),
+           flags       = RESET_REQUIRED,
+           default value = 0,
+           option text = STRING_TOKEN(STR_SATA_0_SETUP_MODE_0), value = 0x0, flags = 0;
+           option text = STRING_TOKEN(STR_SATA_0_SETUP_MODE_1), value = 0x1, flags = 0;
+  endoneof;
+
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  grayoutif TRUE;
+      subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_0_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[0],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_0),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_1_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[1],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_1),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+	
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_2_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[2],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_2),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+    
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_3_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[3],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_3),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_4_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[4],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_4),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+	
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_5_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[5],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_5),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+    
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_6_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[6],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_6),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_0_SETUP_PORT_7_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController0[7],
+               prompt   = STRING_TOKEN(STR_SATA_0_SETUP_PORT_7),
+               help     = STRING_TOKEN(STR_SATA_0_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+  
+endform;
+
+  // SATA1 CONFIGURATION FORM
+  
+  form formid = FORM_SATA_1_SETUP_ID, title = STRING_TOKEN(STR_SATA_1_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  oneof varid  = OYSetup.SataInterfaceMode[1],
+           prompt      = STRING_TOKEN(STR_SATA_1_SETUP_MODE),
+           help        = STRING_TOKEN(STR_SATA_1_SETUP_MODE_HELP),
+           flags       = RESET_REQUIRED,
+           default value = 0,
+           option text = STRING_TOKEN(STR_SATA_1_SETUP_MODE_0), value = 0x0, flags = 0;
+           option text = STRING_TOKEN(STR_SATA_1_SETUP_MODE_1), value = 0x1, flags = 0;
+  endoneof;
+
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  grayoutif TRUE;
+      subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_0_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[0],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_0),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_1_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[1],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_1),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+	
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_2_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[2],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_2),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+    
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_3_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[3],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_3),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_4_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[4],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_4),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+	
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_5_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[5],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_5),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+    
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_6_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[6],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_6),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_1_SETUP_PORT_7_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController1[7],
+               prompt   = STRING_TOKEN(STR_SATA_1_SETUP_PORT_7),
+               help     = STRING_TOKEN(STR_SATA_1_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+  
+endform;
+
+  // SATA2 CONFIGURATION FORM
+  
+  form formid = FORM_SATA_2_SETUP_ID, title = STRING_TOKEN(STR_SATA_2_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_TITLE);
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  oneof varid  = OYSetup.SataInterfaceMode[2],
+           prompt      = STRING_TOKEN(STR_SATA_2_SETUP_MODE),
+           help        = STRING_TOKEN(STR_SATA_2_SETUP_MODE_HELP),
+           flags       = RESET_REQUIRED,
+           default value = 0,
+           option text = STRING_TOKEN(STR_SATA_2_SETUP_MODE_0), value = 0x0, flags = 0;
+           option text = STRING_TOKEN(STR_SATA_2_SETUP_MODE_1), value = 0x1, flags = 0;
+  endoneof;
+
+  subtitle text = STRING_TOKEN(STR_EMPTY);
+
+  grayoutif TRUE;
+      subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_0_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[0],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_0),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_1_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[1],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_1),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+	
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_2_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[2],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_2),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+    
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_3_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[3],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_3),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_4_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[4],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_4),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+	
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_5_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[5],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_5),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+    
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_6_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[6],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_6),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,  
+    endcheckbox;
+
+    subtitle text = STRING_TOKEN(STR_EMPTY);
+  
+  grayoutif TRUE;
+       subtitle text = STRING_TOKEN(STR_SATA_2_SETUP_PORT_7_DISK);
+  endif;
+  
+    checkbox varid   = OYSetup.SataPortController2[7],
+               prompt   = STRING_TOKEN(STR_SATA_2_SETUP_PORT_7),
+               help     = STRING_TOKEN(STR_SATA_2_SETUP_PORT_ENABLE_HELP),
+               flags    = RESET_REQUIRED,
+           default = TRUE,	  
+    endcheckbox;
+  
+  endform;
+
+endformset;

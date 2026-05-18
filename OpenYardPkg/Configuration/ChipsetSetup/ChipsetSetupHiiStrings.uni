@@ -1,0 +1,166 @@
+//// @file
+//
+// TODO: Brief Description of UEFI Driver ChipsetSetupDxe
+//  
+// TODO: Detailed Description of UEFI Driver ChipsetSetupDxe
+//
+// TODO: Copyright for UEFI Driver ChipsetSetupDxe
+//  
+// TODO: License for UEFI Driver ChipsetSetupDxe
+// 
+////
+
+#langdef en-US "English"
+
+#string STR_CHIPSET_SETUP_FORM_SET_TITLE                     #language en-US  "Chipset Configuration"
+#string STR_CHIPSET_SETUP_FORM_SET_HELP                      #language en-US  "Chipset Configuration"
+#string STR_CHIPSET_SETUP_FORM_TITLE                         #language en-US  "Chipset Configuration"
+
+#string STR_EMPTY                                        #language en-US  ""
+
+#string STR_PCH_POWER_STATE                      #language en-US  "Power State"
+#string STR_PCH_POWER_STATE_HELP                 #language en-US  "Set power state after power loss"
+#string STR_PCH_POWER_STATE_0                    #language en-US  "Power On"
+#string STR_PCH_POWER_STATE_1                    #language en-US  "Power Off"
+#string STR_PCH_POWER_STATE_FE                   #language en-US  "Last State"
+#string STR_PCH_POWER_STATE_FF                   #language en-US  "Unspecified"
+
+
+// USB CONFIGURATION
+
+#string STR_USB_SETUP_TITLE                          #language en-US  "USB Configuration"
+#string STR_USB_SETUP_HELP                           #language en-US  "USB Configuration"
+
+#string STR_USB_SETUP_FILTER                         #language en-US  "USB Filter"
+#string STR_USB_SETUP_FILTER_HELP                    #language en-US  "Filter USB devices to use in BIOS"
+
+#string STR_USB_SETUP_FILTER_0                       #language en-US  "All USB devices"
+#string STR_USB_SETUP_FILTER_1                       #language en-US  "Only HID USB devices"
+
+#string STR_USB_SETUP_READONLY                       #language en-US  "USB Read Only"
+#string STR_USB_SETUP_READONLY_HELP                  #language en-US  "Prohibit writing to USB in BIOS"
+
+#string STR_USB_SETUP_PORT_CONTROL                   #language en-US  "USB Port Control"
+#string STR_USB_SETUP_PORT_CONTROL_HELP              #language en-US  "Enable/disable specific USB physical port"
+
+#string STR_USB_SETUP_FRONT_PANEL                    #language en-US  "Front panel"
+#string STR_USB_SETUP_PORT_ENABLE_0                  #language en-US  "USB Port 1"
+#string STR_USB_SETUP_PORT_ENABLE_0_HELP             #language en-US  "Enable/disable front panel USB port 1"
+#string STR_USB_SETUP_PORT_ENABLE_1                  #language en-US  "USB Port 2"
+#string STR_USB_SETUP_PORT_ENABLE_1_HELP             #language en-US  "Enable/disable front panel USB port 2"
+
+#string STR_USB_SETUP_REAR_PANEL                     #language en-US  "Rear panel"
+#string STR_USB_SETUP_PORT_ENABLE_2                  #language en-US  "USB Port 1"
+#string STR_USB_SETUP_PORT_ENABLE_2_HELP             #language en-US  "Enable/disable rear panel USB port 1"
+#string STR_USB_SETUP_PORT_ENABLE_3                  #language en-US  "USB Port 2"
+#string STR_USB_SETUP_PORT_ENABLE_3_HELP             #language en-US  "Enable/disable rear panel USB port 2"
+
+// SATA0 CONFIGURATION
+
+#string STR_SATA_0_SETUP_TITLE                          #language en-US  "SATA0 Configuration"
+#string STR_SATA_0_SETUP_HELP                           #language en-US  "SATA0 Configuration"
+
+#string STR_SATA_0_SETUP_MODE                           #language en-US  "SATA0 Mode"
+#string STR_SATA_0_SETUP_MODE_HELP                      #language en-US  "Set SATA0 mode to AHCI or RAID"
+
+#string STR_SATA_0_SETUP_MODE_0                         #language en-US  "AHCI"
+#string STR_SATA_0_SETUP_MODE_1                         #language en-US  "RAID"
+
+#string STR_SATA_0_SETUP_PORT_CONTROL                   #language en-US  "SATA0 Port Control"
+#string STR_SATA_0_SETUP_PORT_CONTROL_HELP              #language en-US  "Enable/disable specific SATA0 port"
+
+#string STR_SATA_0_SETUP_PORT_0                          #language en-US  "SATA0 Port 0"
+#string STR_SATA_0_SETUP_PORT_1                          #language en-US  "SATA0 Port 1"
+#string STR_SATA_0_SETUP_PORT_2                          #language en-US  "SATA0 Port 2"
+#string STR_SATA_0_SETUP_PORT_3                          #language en-US  "SATA0 Port 3"
+#string STR_SATA_0_SETUP_PORT_4                          #language en-US  "SATA0 Port 4"
+#string STR_SATA_0_SETUP_PORT_5                          #language en-US  "SATA0 Port 5"
+#string STR_SATA_0_SETUP_PORT_6                          #language en-US  "SATA0 Port 6"
+#string STR_SATA_0_SETUP_PORT_7                          #language en-US  "SATA0 Port 7"
+
+#string STR_SATA_0_SETUP_PORT_ENABLE                     #language en-US  "Enable"
+                                                       
+#string STR_SATA_0_SETUP_PORT_ENABLE_HELP                #language en-US  "Enable/disable SATA0 port"
+                                                       
+#string STR_SATA_0_SETUP_PORT_0_DISK                     #language en-US  "-"
+#string STR_SATA_0_SETUP_PORT_1_DISK                     #language en-US  "-"
+#string STR_SATA_0_SETUP_PORT_2_DISK                     #language en-US  "-"
+#string STR_SATA_0_SETUP_PORT_3_DISK                     #language en-US  "-"
+#string STR_SATA_0_SETUP_PORT_4_DISK                     #language en-US  "-"
+#string STR_SATA_0_SETUP_PORT_5_DISK                     #language en-US  "-"
+#string STR_SATA_0_SETUP_PORT_6_DISK                     #language en-US  "-"
+#string STR_SATA_0_SETUP_PORT_7_DISK                     #language en-US  "-"
+
+// SATA1 CONFIGURATION
+
+#string STR_SATA_1_SETUP_TITLE                          #language en-US  "SATA1 Configuration"
+#string STR_SATA_1_SETUP_HELP                           #language en-US  "SATA1 Configuration"
+
+#string STR_SATA_1_SETUP_MODE                           #language en-US  "SATA1 Mode"
+#string STR_SATA_1_SETUP_MODE_HELP                      #language en-US  "Set SATA1 mode to AHCI or RAID"
+
+#string STR_SATA_1_SETUP_MODE_0                         #language en-US  "AHCI"
+#string STR_SATA_1_SETUP_MODE_1                         #language en-US  "RAID"
+
+#string STR_SATA_1_SETUP_PORT_CONTROL                   #language en-US  "SATA1 Port Control"
+#string STR_SATA_1_SETUP_PORT_CONTROL_HELP              #language en-US  "Enable/disable specific SATA1 port"
+
+#string STR_SATA_1_SETUP_PORT_0                          #language en-US  "SATA1 Port 0"
+#string STR_SATA_1_SETUP_PORT_1                          #language en-US  "SATA1 Port 1"
+#string STR_SATA_1_SETUP_PORT_2                          #language en-US  "SATA1 Port 2"
+#string STR_SATA_1_SETUP_PORT_3                          #language en-US  "SATA1 Port 3"
+#string STR_SATA_1_SETUP_PORT_4                          #language en-US  "SATA1 Port 4"
+#string STR_SATA_1_SETUP_PORT_5                          #language en-US  "SATA1 Port 5"
+#string STR_SATA_1_SETUP_PORT_6                          #language en-US  "SATA1 Port 6"
+#string STR_SATA_1_SETUP_PORT_7                          #language en-US  "SATA1 Port 7"
+
+#string STR_SATA_1_SETUP_PORT_ENABLE                     #language en-US  "Enable"
+                                                       
+#string STR_SATA_1_SETUP_PORT_ENABLE_HELP                #language en-US  "Enable/disable SATA1 port"
+                                                       
+#string STR_SATA_1_SETUP_PORT_0_DISK                     #language en-US  "-"
+#string STR_SATA_1_SETUP_PORT_1_DISK                     #language en-US  "-"
+#string STR_SATA_1_SETUP_PORT_2_DISK                     #language en-US  "-"
+#string STR_SATA_1_SETUP_PORT_3_DISK                     #language en-US  "-"
+#string STR_SATA_1_SETUP_PORT_4_DISK                     #language en-US  "-"
+#string STR_SATA_1_SETUP_PORT_5_DISK                     #language en-US  "-"
+#string STR_SATA_1_SETUP_PORT_6_DISK                     #language en-US  "-"
+#string STR_SATA_1_SETUP_PORT_7_DISK                     #language en-US  "-"
+
+// SATA2 CONFIGURATION
+
+#string STR_SATA_2_SETUP_TITLE                          #language en-US  "SATA2 Configuration"
+#string STR_SATA_2_SETUP_HELP                           #language en-US  "SATA2 Configuration"
+
+#string STR_SATA_2_SETUP_MODE                           #language en-US  "SATA2 Mode"
+#string STR_SATA_2_SETUP_MODE_HELP                      #language en-US  "Set SATA2 mode to AHCI or RAID"
+
+#string STR_SATA_2_SETUP_MODE_0                         #language en-US  "AHCI"
+#string STR_SATA_2_SETUP_MODE_1                         #language en-US  "RAID"
+
+#string STR_SATA_2_SETUP_PORT_CONTROL                   #language en-US  "SATA2 Port Control"
+#string STR_SATA_2_SETUP_PORT_CONTROL_HELP              #language en-US  "Enable/disable specific SATA2 port"
+
+#string STR_SATA_2_SETUP_PORT_0                          #language en-US  "SATA2 Port 0"
+#string STR_SATA_2_SETUP_PORT_1                          #language en-US  "SATA2 Port 1"
+#string STR_SATA_2_SETUP_PORT_2                          #language en-US  "SATA2 Port 2"
+#string STR_SATA_2_SETUP_PORT_3                          #language en-US  "SATA2 Port 3"
+#string STR_SATA_2_SETUP_PORT_4                          #language en-US  "SATA2 Port 4"
+#string STR_SATA_2_SETUP_PORT_5                          #language en-US  "SATA2 Port 5"
+#string STR_SATA_2_SETUP_PORT_6                          #language en-US  "SATA2 Port 6"
+#string STR_SATA_2_SETUP_PORT_7                          #language en-US  "SATA2 Port 7"
+
+#string STR_SATA_2_SETUP_PORT_ENABLE                     #language en-US  "Enable"
+                                                       
+#string STR_SATA_2_SETUP_PORT_ENABLE_HELP                #language en-US  "Enable/disable SATA2 port"
+                                                       
+#string STR_SATA_2_SETUP_PORT_0_DISK                     #language en-US  "-"
+#string STR_SATA_2_SETUP_PORT_1_DISK                     #language en-US  "-"
+#string STR_SATA_2_SETUP_PORT_2_DISK                     #language en-US  "-"
+#string STR_SATA_2_SETUP_PORT_3_DISK                     #language en-US  "-"
+#string STR_SATA_2_SETUP_PORT_4_DISK                     #language en-US  "-"
+#string STR_SATA_2_SETUP_PORT_5_DISK                     #language en-US  "-"
+#string STR_SATA_2_SETUP_PORT_6_DISK                     #language en-US  "-"
+#string STR_SATA_2_SETUP_PORT_7_DISK                     #language en-US  "-"
+
+//
