@@ -230,8 +230,8 @@ HWCheckExtractConfig (
   HW_CHECK_CONFIG_PRIVATE_DATA* ConfigPrivate;
   EFI_HII_CONFIG_ROUTING_PROTOCOL* HiiConfigRouting;
   EFI_STRING                       ConfigRequest;
-  EFI_STRING                       ConfigRequestHdr;
-  UINTN                            Size;
+//  EFI_STRING                       ConfigRequestHdr;
+//  UINTN                            Size;
   BOOLEAN                          AllocatedRequest;
 
   if (Progress == NULL || Results == NULL) {
@@ -240,9 +240,9 @@ HWCheckExtractConfig (
   //
   // Initialize the local variables.
   //
-  ConfigRequestHdr = NULL;
+//  ConfigRequestHdr = NULL;
   ConfigRequest = NULL;
-  Size = 0;
+//  Size = 0;
   *Progress = Request;
   AllocatedRequest = FALSE;
   ConfigPrivate = HW_CHECK_CONFIG_PRIVATE_FROM_THIS(This);
@@ -326,7 +326,7 @@ HWCheckRouteConfig (
   EFI_STATUS                       Status;
   UINTN                            BufferSize;
   HW_CHECK_CONFIG_PRIVATE_DATA* ConfigPrivate;
-  EFI_HII_CONFIG_ACCESS_PROTOCOL* ConfigAccess;
+//  EFI_HII_CONFIG_ACCESS_PROTOCOL* ConfigAccess;
   EFI_HII_CONFIG_ROUTING_PROTOCOL* ConfigRouting;
 
   if (Configuration == NULL || Progress == NULL) {
@@ -334,7 +334,7 @@ HWCheckRouteConfig (
   }
 
   ConfigPrivate = HW_CHECK_CONFIG_PRIVATE_FROM_THIS(This);
-  ConfigAccess = &ConfigPrivate->ConfigAccess;
+//  ConfigAccess = &ConfigPrivate->ConfigAccess;
   ConfigRouting = ConfigPrivate->HiiConfigRouting;
   *Progress = Configuration;
 

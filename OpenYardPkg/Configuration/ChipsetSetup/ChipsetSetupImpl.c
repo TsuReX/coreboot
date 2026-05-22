@@ -228,8 +228,8 @@ ChipsetSetupExtractConfig (
   CHIPSET_SETUP_CONFIG_PRIVATE_DATA* ConfigPrivate;
   EFI_HII_CONFIG_ROUTING_PROTOCOL* HiiConfigRouting;
   EFI_STRING                       ConfigRequest;
-  EFI_STRING                       ConfigRequestHdr;
-  UINTN                            Size;
+//  EFI_STRING                       ConfigRequestHdr;
+//  UINTN                            Size;
   BOOLEAN                          AllocatedRequest;
 
   if (Progress == NULL || Results == NULL) {
@@ -238,9 +238,9 @@ ChipsetSetupExtractConfig (
   //
   // Initialize the local variables.
   //
-  ConfigRequestHdr = NULL;
+//  ConfigRequestHdr = NULL;
   ConfigRequest = NULL;
-  Size = 0;
+//  Size = 0;
   *Progress = Request;
   AllocatedRequest = FALSE;
   ConfigPrivate = CHIPSET_SETUP_CONFIG_PRIVATE_FROM_THIS(This);
@@ -324,7 +324,7 @@ ChipsetSetupRouteConfig (
   EFI_STATUS                       Status;
   UINTN                            BufferSize;
   CHIPSET_SETUP_CONFIG_PRIVATE_DATA* ConfigPrivate;
-  EFI_HII_CONFIG_ACCESS_PROTOCOL* ConfigAccess;
+//  EFI_HII_CONFIG_ACCESS_PROTOCOL* ConfigAccess;
   EFI_HII_CONFIG_ROUTING_PROTOCOL* ConfigRouting;
 
   if (Configuration == NULL || Progress == NULL) {
@@ -332,7 +332,7 @@ ChipsetSetupRouteConfig (
   }
 
   ConfigPrivate = CHIPSET_SETUP_CONFIG_PRIVATE_FROM_THIS(This);
-  ConfigAccess = &ConfigPrivate->ConfigAccess;
+//  ConfigAccess = &ConfigPrivate->ConfigAccess;
   ConfigRouting = ConfigPrivate->HiiConfigRouting;
   *Progress = Configuration;
 
@@ -417,7 +417,7 @@ ChipsetSetupCallback (
      OUT EFI_BROWSER_ACTION_REQUEST         *ActionRequest
   )
 {
-  CHIPSET_SETUP_CONFIG_PRIVATE_DATA    *ConfigPrivate;
+//  CHIPSET_SETUP_CONFIG_PRIVATE_DATA    *ConfigPrivate;
   EFI_STATUS                      Status;
 
 
@@ -427,7 +427,7 @@ ChipsetSetupCallback (
   }
 
   Status = EFI_SUCCESS;
-  ConfigPrivate = CHIPSET_SETUP_CONFIG_PRIVATE_FROM_THIS(This);
+//  ConfigPrivate = CHIPSET_SETUP_CONFIG_PRIVATE_FROM_THIS(This);
 
   switch (Action) {
   case EFI_BROWSER_ACTION_CHANGING:

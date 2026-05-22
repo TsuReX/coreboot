@@ -27,9 +27,9 @@ PrintAddressDxeUnload (
   IN EFI_HANDLE  ImageHandle
   )
 {
-  EFI_STATUS  Status;
+//  EFI_STATUS  Status;
 
-  Status = EFI_SUCCESS;
+//  Status = EFI_SUCCESS;
   //
   // Do any additional cleanup that is required for this driver
   //

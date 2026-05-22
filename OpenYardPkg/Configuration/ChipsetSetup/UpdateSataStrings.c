@@ -286,7 +286,7 @@ ChipsetSetupSataUpdateDisks(EFI_HII_HANDLE HiiHandle
   //
   // Initialize IDE Combined mode
   //
-  Status = gBS->LocateProtocol(&gEfiPciRootBridgeIoProtocolGuid, NULL, &PciRootBridgeIo);
+  Status = gBS->LocateProtocol(&gEfiPciRootBridgeIoProtocolGuid, NULL, (VOID**)&PciRootBridgeIo);
 
   Status = PciRootBridgeIo->Pci.Read(
     PciRootBridgeIo,
@@ -344,7 +344,7 @@ ChipsetSetupSataUpdateDisks(EFI_HII_HANDLE HiiHandle
       }
     }
     if (SataCtrlIndex < MaxSataControllerNum()) {
-      Status = gBS->HandleProtocol(HandleBuffer[Index], &gEfiDiskInfoProtocolGuid, &DiskInfo);
+      Status = gBS->HandleProtocol(HandleBuffer[Index], &gEfiDiskInfoProtocolGuid, (VOID**)&DiskInfo);
       ASSERT_EFI_ERROR(Status);
 
       Status = DiskInfo->WhichIde(

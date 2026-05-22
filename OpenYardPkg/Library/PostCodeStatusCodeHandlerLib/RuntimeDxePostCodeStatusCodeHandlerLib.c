@@ -77,7 +77,7 @@ PostCodeStatusCodeReportWorker (
       );
 	  
       gST->ConOut->SetCursorPosition(gST->ConOut, MaxColumns - 3, MaxRows - 1);
-      AsciiPrint((UINT8*)"%02X\0", (UINT8) PostCodeValue);
+      AsciiPrint((CHAR8*)"%02X\0", (UINT8) PostCodeValue);
       gST->ConOut->SetCursorPosition(gST->ConOut, CurPosX, CurPosY);
 	}
 	

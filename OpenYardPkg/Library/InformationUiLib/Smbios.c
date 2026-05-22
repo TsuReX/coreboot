@@ -1,7 +1,7 @@
 #include "Smbios.h"
 
 extern INFO_CALLBACK_DATA  gInfoPrivate;
-
+/*
 CHAR16* mDeviceTypeStr[] = {
   L"Legacy BEV",
   L"Legacy Floppy",
@@ -12,7 +12,7 @@ CHAR16* mDeviceTypeStr[] = {
   L"Legacy Embedded Network",
   L"Legacy Unknown Device"
 };
-
+*/
 
 /**
   Convert Memory Size to a string.

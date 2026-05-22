@@ -8,24 +8,24 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "Info.h"
 
-UINT16    mKeyInput;
+//UINT16    mKeyInput;
 EFI_GUID  mInfoGuid = INFO_FORMSET_GUID;
 //
 // Boot video resolution and text mode.
 //
-UINT32  mBmBootHorizontalResolution = 0;
-UINT32  mBmBootVerticalResolution   = 0;
-UINT32  mBmBootTextModeColumn       = 0;
-UINT32  mBmBootTextModeRow          = 0;
+//UINT32  mBmBootHorizontalResolution = 0;
+//UINT32  mBmBootVerticalResolution   = 0;
+//UINT32  mBmBootTextModeColumn       = 0;
+//UINT32  mBmBootTextModeRow          = 0;
 //
 // BIOS setup video resolution and text mode.
 //
-UINT32  mBmSetupTextModeColumn       = 0;
-UINT32  mBmSetupTextModeRow          = 0;
-UINT32  mBmSetupHorizontalResolution = 0;
-UINT32  mBmSetupVerticalResolution   = 0;
+//UINT32  mBmSetupTextModeColumn       = 0;
+//UINT32  mBmSetupTextModeRow          = 0;
+//UINT32  mBmSetupHorizontalResolution = 0;
+//UINT32  mBmSetupVerticalResolution   = 0;
 
-BOOLEAN  mBmModeInitialized = FALSE;
+//BOOLEAN  mBmModeInitialized = FALSE;
 
 
 INFO_CALLBACK_DATA  gInfoPrivate = {
@@ -89,10 +89,10 @@ _UpdateFrontPageBannerStrings(
   SMBIOS_TABLE_TYPE19* Type19Record;
   EFI_SMBIOS_TABLE_HEADER* Record;
   UINT64                   InstalledMemory;
-  BOOLEAN                  FoundCpu;
+  //BOOLEAN                  FoundCpu;
 
   InstalledMemory = 0;
-  FoundCpu = 0;
+//  FoundCpu = 0;
 
   //
   // Update default banner string.

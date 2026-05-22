@@ -329,11 +329,11 @@ AdjustQuestionValue (
   UINT8   Month;
   UINT16  Year;
   UINT8   Maximum;
-  UINT8   Minimum;
+//  UINT8   Minimum;
 
   Month   = QuestionValue->Value.date.Month;
   Year    = QuestionValue->Value.date.Year;
-  Minimum = 1;
+//  Minimum = 1;
 
   switch (Month) {
     case 2:

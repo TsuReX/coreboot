@@ -16,8 +16,8 @@
 
 #define IPMI_COMMAND_HW_CHECK_RESULT                      0x30
 
-extern EFI_GUID   mHWInfoVarGuid = HWDATA_VAR_GUID;
-extern CHAR16     mHWInfoVarName[] = HWDATA_VAR_NAME;
+extern EFI_GUID   mHWInfoVarGuid;// = HWDATA_VAR_GUID;
+extern CHAR16     mHWInfoVarName[];// = HWDATA_VAR_NAME;
 
 
 STATIC HW_CHECK_CONFIG_PRIVATE_DATA* mConfigPrivate = NULL;

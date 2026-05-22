@@ -57,7 +57,7 @@ ExitBootServicesNotify(
 {
   mSetVariableOriginal = gRT->SetVariable;
 
-  gRT->SetVariable = &SetVariableNop;
+  gRT->SetVariable = (EFI_SET_VARIABLE)&SetVariableNop;
 }
 
 

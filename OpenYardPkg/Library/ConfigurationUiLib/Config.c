@@ -8,24 +8,24 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 #include "Config.h"
 
-UINT16    mKeyInput;
+//UINT16    mKeyInput;
 EFI_GUID  mConfigGuid = CONFIG_FORMSET_GUID;
 //
 // Boot video resolution and text mode.
 //
-UINT32  mBmBootHorizontalResolution = 0;
-UINT32  mBmBootVerticalResolution   = 0;
-UINT32  mBmBootTextModeColumn       = 0;
-UINT32  mBmBootTextModeRow          = 0;
+//UINT32  mBmBootHorizontalResolution = 0;
+//UINT32  mBmBootVerticalResolution   = 0;
+//UINT32  mBmBootTextModeColumn       = 0;
+//UINT32  mBmBootTextModeRow          = 0;
 //
 // BIOS setup video resolution and text mode.
 //
-UINT32  mBmSetupTextModeColumn       = 0;
-UINT32  mBmSetupTextModeRow          = 0;
-UINT32  mBmSetupHorizontalResolution = 0;
-UINT32  mBmSetupVerticalResolution   = 0;
+//UINT32  mBmSetupTextModeColumn       = 0;
+//UINT32  mBmSetupTextModeRow          = 0;
+//UINT32  mBmSetupHorizontalResolution = 0;
+//UINT32  mBmSetupVerticalResolution   = 0;
 
-BOOLEAN  mBmModeInitialized = FALSE;
+//BOOLEAN  mBmModeInitialized = FALSE;
 
 
 CONFIG_CALLBACK_DATA  gConfigPrivate = {
@@ -124,8 +124,8 @@ CreateConfigForm(
   VOID* EndOpCodeHandle;
   EFI_IFR_GUID_LABEL* StartLabel;
   EFI_IFR_GUID_LABEL* EndLabel;
-  BOOLEAN             AddNetworkMenu;
-  UINTN               AddItemCount;
+//  BOOLEAN             AddNetworkMenu;
+//  UINTN               AddItemCount;
   CHAR16* DevicePathStr;
   EFI_STRING_ID       DevicePathId;
   EFI_IFR_FORM_SET* Buffer;
@@ -141,8 +141,8 @@ CreateConfigForm(
   Buffer = NULL;
 
   HiiHandle = gConfigPrivate.HiiHandle;
-  AddNetworkMenu = FALSE;
-  AddItemCount = 0;
+//  AddNetworkMenu = FALSE;
+//  AddItemCount = 0;
 
   //
   // Allocate space for creation of UpdateData Buffer
