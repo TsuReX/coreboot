@@ -43,22 +43,40 @@ generators implement the functionality required for ARM architecture;
 the framework is extensible, and support for other architectures can
 be added easily.
 
-The framework currently supports the following table generators for ARM:
-* DBG2 - Debug Port Table 2
+The framework currently supports the following table generators:
+
 * DSDT - Differentiated system description table. This is essentially
          a RAW table generator.
-* FADT - Fixed ACPI Description Table
-* GTDT - Generic Timer Description Table
-* IORT - IO Remapping Table
-* MADT - Multiple APIC Description Table
-* MCFG - PCI Express memory mapped configuration space base address
-         Description Table
-* PCCT - Platform Communications Channel Table
-* PPTT - Processor Properties Topology Table
-* SPCR - Serial Port Console Redirection Table
-* SRAT - System Resource Affinity Table
 * SSDT - Secondary System Description Table. This is essentially
          a RAW table generator.
+* MADT - Multiple APIC Description Table
+* GTDT - Generic Timer Description Table
+* DBG2 - Debug Port Table 2
+* SPCR - Serial Port Console Redirection Table
+* MCFG - PCI Express memory mapped configuration space base address
+         Description Table
+* IORT - IO Remapping Table
+* PPTT - Processor Properties Topology Table
+* SRAT - System Resource Affinity Table
+* SSDT Serial Port
+* SSDT CMN
+* SSDT Cpu
+* SSDT Pcie
+* SSDT Plic/Aplic
+* PCCT - Platform Communications Channel Table
+* FADT - Fixed ACPI Description Table
+* TPM2 - Trusted Platform Module 2 Table
+* WSMT - Windows Security Mitigation Table
+* HPET - IA-PC High Precision Event Timer Table
+* SSDT HPET
+* SPMI - Server Platform Management Interface Table
+* FACS - Firmware ACPI Control Structure
+* CEDT - CXL Early Discovery Table
+* SLIT - System Locality Information Table
+* RHCT - RISC-V Hart Capabilities Table
+* SSDT DMC
+* HEST - Hardware Error Source Table
+* EINJ - APEI Error Injection Table
 
 ## Dynamic AML
 
@@ -314,18 +332,19 @@ parameter to the edk2 build system.
 Example:
 
 >build -a AARCH64 -p Platform\ARM\JunoPkg\ArmJuno.dsc
-   -t GCC5 **-D DYNAMIC_TABLES_FRAMEWORK**
+   -t GCC **-D DYNAMIC_TABLES_FRAMEWORK**
 
 or
 
 >build -a AARCH64 -p Platform\ARM\VExpressPkg\ArmVExpress-FVP-AArch64.dsc
-   -t GCC5 **-D DYNAMIC_TABLES_FRAMEWORK**
+   -t GCC **-D DYNAMIC_TABLES_FRAMEWORK**
 
 # Prerequisites
 
 Ensure that the latest ACPICA iASL compiler is used for building *Dynamic Tables Framework*.
 *Dynamic Tables Framework* has been tested using the following iASL compiler version:
-[Version 20200717](https://www.acpica.org/node/183), dated 17 July, 2020.
+[Version 20200717](https://www.intel.com/content/www/us/en/download/774849/774863/acpi-component-architecture-downloads-previous-releases-2020.html),
+dated 17 July, 2020.
 
 
 #Running CI builds locally
@@ -368,7 +387,7 @@ The instructions to setup the CI environment are in *'edk2\\.pytool\\Readme.md'*
     ```
         stuart_setup -c .pytool/CISettings.py TOOL_CHAIN_TAG=<TOOL_CHAIN_TAG> -a <TARGET_ARCH>
 
-        e.g. stuart_setup -c .pytool/CISettings.py TOOL_CHAIN_TAG=GCC5
+        e.g. stuart_setup -c .pytool/CISettings.py TOOL_CHAIN_TAG=GCC
     ```
 
 5. Initialize & Update Dependencies - only as needed when ext_deps change
@@ -376,7 +395,7 @@ The instructions to setup the CI environment are in *'edk2\\.pytool\\Readme.md'*
     ```
         stuart_update -c .pytool/CISettings.py TOOL_CHAIN_TAG=<TOOL_CHAIN_TAG> -a <TARGET_ARCH>
 
-        e.g. stuart_update -c .pytool/CISettings.py TOOL_CHAIN_TAG=GCC5
+        e.g. stuart_update -c .pytool/CISettings.py TOOL_CHAIN_TAG=GCC
     ```
 
 6. Compile the basetools if necessary - only when basetools C source files change
@@ -390,7 +409,7 @@ The instructions to setup the CI environment are in *'edk2\\.pytool\\Readme.md'*
     ```
         stuart_build-c .pytool/CISettings.py TOOL_CHAIN_TAG=<TOOL_CHAIN_TAG> -a <TARGET_ARCH>
 
-        e.g. stuart_ci_build -c .pytool/CISettings.py TOOL_CHAIN_TAG=GCC5 -p DynamicTablesPkg -a AARCH64 --verbose
+        e.g. stuart_ci_build -c .pytool/CISettings.py TOOL_CHAIN_TAG=GCC -p DynamicTablesPkg -a AARCH64 --verbose
     ```
 
     - use `stuart_build -c .pytool/CISettings.py -h` option to see help on additional options.
@@ -498,6 +517,14 @@ The CM_OBJECT_ID type is used to identify the Configuration Manager
 |  24   | Pcc Subspace Type 5 Info                  | |
 |  25   | P-State Dependency (PSD) Info             | |
 |  26   | TPM Interface Info                        | |
+|  27   | SPMI Interface Info                       | |
+|  28   | SPMI Interrupt and Device/Uid Info        | |
+|  29   | Processor C-State Control Info            | |
+|  30   | Processor C-State Dependency Info         | |
+|  31   | Processor P-State Control Info            | |
+|  32   | Processor P-State Status Info             | |
+|  33   | Processor P-State Capability Info         | |
+|  34   | _STA Device Status Info                   | |
 |  `*`  | All other values are reserved.            | |
 
 #### Object ID's in the X64 Namespace:
@@ -514,4 +541,13 @@ The CM_OBJECT_ID type is used to identify the Configuration Manager
 |   7   | Sleep Block Info                          | |
 |   8   | Reset Block Info                          | |
 |   9   | Miscellaneous Block Info                  | |
+|  10   | Windows protection flag Info              | |
+|  11   | HPET device Info                          | |
+|  12   | MADT Table Info                           | |
+|  13   | Local APIC and X2APIC info                | |
+|  14   | IO APIC info                              | |
+|  15   | Interrupt Source Override info            | |
+|  16   | Local APIC and X2APIC NMI info            | |
+|  17   | FACS Information                          | |
+|  18   | Local APIC and X2APIC Affinity info       | |
 |  `*`  | All other values are reserved.            | |

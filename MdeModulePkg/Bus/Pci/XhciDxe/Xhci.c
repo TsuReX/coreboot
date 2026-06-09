@@ -837,6 +837,10 @@ XhcTransfer (
   }
 
   Xhc->PciIo->Flush (Xhc->PciIo);
+  //
+  // Do not free URB data, since it is passed in as an external argument
+  // and allocated and managed by the caller.
+  //
   XhcFreeUrb (Xhc, Urb);
   return Status;
 }
@@ -1227,8 +1231,9 @@ ON_EXIT:
                                 sending or receiving.
   @param  DataBuffersNumber     Number of data buffers prepared for the transfer.
   @param  Data                  Array of pointers to the buffers of data to transmit
-                                from or receive into.
-  @param  DataLength            The lenght of the data buffer.
+                                from or receive into. The caller is responsible for freeing
+                                the buffers after the transfers are completed.
+  @param  DataLength            The length of the data buffer.
   @param  DataToggle            On input, the initial data toggle for the transfer;
                                 On output, it is updated to to next data toggle to
                                 use of the subsequent bulk transfer.
@@ -2077,7 +2082,12 @@ XhcDriverBindingStart (
 
   XhcSetBiosOwnership (Xhc);
 
-  XhcResetHC (Xhc, XHC_RESET_TIMEOUT);
+  Status = XhcResetHC (Xhc, XHC_RESET_TIMEOUT);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a: failed to reset HC\n", __func__));
+    goto FREE_POOL;
+  }
+
   ASSERT (XhcIsHalt (Xhc));
 
   //
@@ -2392,7 +2402,7 @@ XhcGetElapsedTicks (
     // Counter counts upwards, check for an overflow condition
     //
     if (*PreviousTick > CurrentTick) {
-      Delta = (mXhciPerformanceCounterEndValue - *PreviousTick) + CurrentTick;
+      Delta = (CurrentTick - mXhciPerformanceCounterStartValue) + (mXhciPerformanceCounterEndValue - *PreviousTick);
     } else {
       Delta = CurrentTick - *PreviousTick;
     }
@@ -2401,7 +2411,7 @@ XhcGetElapsedTicks (
     // Counter counts downwards, check for an underflow condition
     //
     if (*PreviousTick < CurrentTick) {
-      Delta = (mXhciPerformanceCounterStartValue - CurrentTick) + *PreviousTick;
+      Delta = (mXhciPerformanceCounterStartValue - CurrentTick) + (*PreviousTick - mXhciPerformanceCounterEndValue);
     } else {
       Delta = *PreviousTick - CurrentTick;
     }

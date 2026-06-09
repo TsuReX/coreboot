@@ -2,7 +2,8 @@
   RedfishHttpDxe produces EdkIIRedfishHttpProtocol
   for EDK2 Redfish Feature driver to do HTTP operations.
 
-  Copyright (c) 2023-2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  Copyright (c) 2023-2025, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  Copyright (C) 2025 Advanced Micro Devices, Inc. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
@@ -90,6 +91,67 @@ RedfishRetryRequired (
   }
 
   return FALSE;
+}
+
+/**
+
+  This function follows below sections in Redfish specification to
+  check HTTP status code and see if this is success response or not.
+
+  7.5.2 Modification success responses
+  7.11 POST (action)
+
+  @param[in]  Method          HTTP method of this status code.
+  @param[in]  StatusCode      HTTP status code.
+
+  @retval     BOOLEAN         Return true when this is success response.
+                              Return false when this is not success response.
+
+**/
+BOOLEAN
+RedfishSuccessResponse (
+  IN EFI_HTTP_METHOD       Method,
+  IN EFI_HTTP_STATUS_CODE  *StatusCode
+  )
+{
+  BOOLEAN  SuccessResponse;
+
+  if (StatusCode == NULL) {
+    return TRUE;
+  }
+
+  SuccessResponse = FALSE;
+  switch (Method) {
+    case HttpMethodPost:
+      if ((*StatusCode ==   HTTP_STATUS_200_OK) ||
+          (*StatusCode ==   HTTP_STATUS_201_CREATED) ||
+          (*StatusCode == HTTP_STATUS_202_ACCEPTED) ||
+          (*StatusCode == HTTP_STATUS_204_NO_CONTENT))
+      {
+        SuccessResponse = TRUE;
+      }
+
+      break;
+    case HttpMethodPatch:
+    case HttpMethodPut:
+    case HttpMethodDelete:
+      if ((*StatusCode ==   HTTP_STATUS_200_OK) ||
+          (*StatusCode == HTTP_STATUS_202_ACCEPTED) ||
+          (*StatusCode == HTTP_STATUS_204_NO_CONTENT))
+      {
+        SuccessResponse = TRUE;
+      }
+
+      break;
+    default:
+      //
+      // Return true for unsupported method to prevent false alarm.
+      //
+      SuccessResponse = TRUE;
+      break;
+  }
+
+  return SuccessResponse;
 }
 
 /**
@@ -194,18 +256,16 @@ ReportHttpError (
   //
   AsciiSPrint (ErrorMsg, sizeof (ErrorMsg), REDFISH_HTTP_ERROR_REPORT, HttpMethodToString (Method), (HttpStatusCode == NULL ? HTTP_STATUS_UNSUPPORTED_STATUS : *HttpStatusCode), Uri);
   DEBUG ((DEBUG_ERROR, "%a\n", ErrorMsg));
+
   //
-  // TODO:
-  // Below PI status code is approved by PIWG and wait for specification published.
-  // We will uncomment below report status code after PI status code get published.
-  // REF: https://bugzilla.tianocore.org/show_bug.cgi?id=4483
+  // Report this failure via status code and BMC has chance to capture the error.
   //
-  // REPORT_STATUS_CODE_WITH_EXTENDED_DATA (
-  //  EFI_ERROR_CODE | EFI_ERROR_MAJOR,
-  //  EFI_COMPUTING_UNIT_MANAGEABILITY | EFI_MANAGEABILITY_EC_REDFISH_COMMUNICATION_ERROR,
-  //  ErrorMsg,
-  //  AsciiStrSize (ErrorMsg)
-  //  );
+  REPORT_STATUS_CODE_WITH_EXTENDED_DATA (
+    EFI_ERROR_CODE | EFI_ERROR_MAJOR,
+    EFI_COMPUTING_UNIT_MANAGEABILITY | EFI_MANAGEABILITY_EC_REDFISH_COMMUNICATION_ERROR,
+    ErrorMsg,
+    AsciiStrSize (ErrorMsg)
+    );
 }
 
 /**
@@ -340,7 +400,7 @@ RedfishCreateRedfishService (
 
       Status = Base64Encode (
                  (CONST UINT8 *)BasicAuthString,
-                 BasicAuthStrSize,
+                 AsciiStrLen (BasicAuthString),
                  EncodedAuthString,
                  &EncodedAuthStrSize
                  );
@@ -352,7 +412,7 @@ RedfishCreateRedfishService (
 
         Status = Base64Encode (
                    (CONST UINT8 *)BasicAuthString,
-                   BasicAuthStrSize,
+                   AsciiStrLen (BasicAuthString),
                    EncodedAuthString,
                    &EncodedAuthStrSize
                    );
@@ -824,7 +884,7 @@ RedfishPatchResource (
   DEBUG ((REDFISH_HTTP_CACHE_DEBUG, "%a: Resource is updated, expire URI: %s\n", __func__, Uri));
   RedfishExpireResponse (This, Uri);
 
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR (Status) || !RedfishSuccessResponse (HttpMethodPatch, Response->StatusCode)) {
     DEBUG_CODE (
       DumpRedfishResponse (NULL, DEBUG_ERROR, Response);
       );
@@ -941,7 +1001,7 @@ RedfishPutResource (
   DEBUG ((REDFISH_HTTP_CACHE_DEBUG, "%a: Resource is updated, expire URI: %s\n", __func__, Uri));
   RedfishExpireResponse (This, Uri);
 
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR (Status) || !RedfishSuccessResponse (HttpMethodPut, Response->StatusCode)) {
     DEBUG_CODE (
       DumpRedfishResponse (NULL, DEBUG_ERROR, Response);
       );
@@ -1058,7 +1118,7 @@ RedfishPostResource (
   DEBUG ((REDFISH_HTTP_CACHE_DEBUG, "%a: Resource is updated, expire URI: %s\n", __func__, Uri));
   RedfishExpireResponse (This, Uri);
 
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR (Status) || !RedfishSuccessResponse (HttpMethodPost, Response->StatusCode)) {
     DEBUG_CODE (
       DumpRedfishResponse (NULL, DEBUG_ERROR, Response);
       );
@@ -1177,7 +1237,7 @@ RedfishDeleteResource (
   DEBUG ((REDFISH_HTTP_CACHE_DEBUG, "%a: Resource is updated, expire URI: %s\n", __func__, Uri));
   RedfishExpireResponse (This, Uri);
 
-  if (EFI_ERROR (Status)) {
+  if (EFI_ERROR (Status) || !RedfishSuccessResponse (HttpMethodDelete, Response->StatusCode)) {
     DEBUG_CODE (
       DumpRedfishResponse (NULL, DEBUG_ERROR, Response);
       );

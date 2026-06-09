@@ -13,8 +13,7 @@
 
 **/
 
-#ifndef RISCV_SBI_LIB_H_
-#define RISCV_SBI_LIB_H_
+#pragma once
 
 #include <Uefi.h>
 
@@ -23,8 +22,9 @@
 #define SBI_EXT_0_1_CONSOLE_GETCHAR  0x2
 #define SBI_EXT_BASE                 0x10
 #define SBI_EXT_DBCN                 0x4442434E
-#define SBI_EXT_TIME                 0x54494D45
+#define SBI_EXT_MPXY                 0x4D505859
 #define SBI_EXT_SRST                 0x53525354
+#define SBI_EXT_TIME                 0x54494D45
 
 /* SBI function IDs for base extension */
 #define SBI_EXT_BASE_SPEC_VERSION   0x0
@@ -46,6 +46,20 @@
 /* SBI function IDs for SRST extension */
 #define SBI_EXT_SRST_RESET  0x0
 
+/* SBI function IDs. for MPXY extension */
+#define SBI_EXT_MPXY_GET_SHMEM_SIZE           0x0
+#define SBI_EXT_MPXY_SET_SHMEM                0x1
+#define SBI_EXT_MPXY_GET_CHANNEL_IDS          0x2
+#define SBI_EXT_MPXY_READ_ATTRS               0x3
+#define SBI_EXT_MPXY_WRITE_ATTRS              0x4
+#define SBI_EXT_MPXY_SEND_MSG_WITH_RESP       0x5
+#define SBI_EXT_MPXY_SEND_MSG_NO_RESP         0x6
+#define SBI_EXT_MPXY_GET_NOTIFICATION_EVENTS  0x7
+
+/* SBI flags for MPXY Set Shared Memory operation */
+#define SBI_EXT_MPXY_SHMEM_FLAG_OVERWRITE         0x0
+#define SBI_EXT_MPXY_SHMEM_FLAG_OVERWRITE_RETURN  0x1
+
 #define SBI_SRST_RESET_TYPE_SHUTDOWN     0x0
 #define SBI_SRST_RESET_TYPE_COLD_REBOOT  0x1
 #define SBI_SRST_RESET_TYPE_WARM_REBOOT  0x2
@@ -63,15 +77,12 @@
 #define SBI_ERR_ALREADY_AVAILABLE  -6
 #define SBI_ERR_ALREADY_STARTED    -7
 #define SBI_ERR_ALREADY_STOPPED    -8
-
-#define SBI_LAST_ERR  SBI_ERR_ALREADY_STOPPED
-
-typedef struct {
-  UINT64    BootHartId;
-  VOID      *PeiServiceTable;    // PEI Service table
-  VOID      *PrePiHobList;       // Pre PI Hob List
-  UINT64    FlattenedDeviceTree; // Pointer to Flattened Device tree
-} EFI_RISCV_FIRMWARE_CONTEXT;
+#define SBI_ERR_NO_SHMEM           -9
+#define SBI_ERR_INVALID_STATE      -10
+#define SBI_ERR_BAD_RANGE          -11
+#define SBI_ERR_NOT_IMPLEMENTED    -12
+#define SBI_ERR_TIMEOUT            -13
+#define SBI_ERR_IO                 -14
 
 //
 // EDK2 OpenSBI firmware extension return status.
@@ -110,55 +121,6 @@ SbiSystemReset (
   );
 
 /**
-  Get firmware context of the calling hart.
-
-  @param[out] FirmwareContext      The firmware context pointer.
-**/
-VOID
-EFIAPI
-GetFirmwareContext (
-  OUT EFI_RISCV_FIRMWARE_CONTEXT  **FirmwareContext
-  );
-
-/**
-  Set firmware context of the calling hart.
-
-  @param[in] FirmwareContext       The firmware context pointer.
-**/
-VOID
-EFIAPI
-SetFirmwareContext (
-  IN EFI_RISCV_FIRMWARE_CONTEXT  *FirmwareContext
-  );
-
-/**
-  Get pointer to OpenSBI Firmware Context
-
-  Get the pointer of firmware context.
-
-  @param    FirmwareContextPtr   Pointer to retrieve pointer to the
-                                 Firmware Context.
-**/
-VOID
-EFIAPI
-GetFirmwareContextPointer (
-  IN OUT EFI_RISCV_FIRMWARE_CONTEXT  **FirmwareContextPtr
-  );
-
-/**
-  Set pointer to OpenSBI Firmware Context
-
-  Set the pointer of firmware context.
-
-  @param    FirmwareContextPtr   Pointer to Firmware Context.
-**/
-VOID
-EFIAPI
-SetFirmwareContextPointer (
-  IN EFI_RISCV_FIRMWARE_CONTEXT  *FirmwareContextPtr
-  );
-
-/**
   Make ECALL in assembly
 
   Switch to M-mode
@@ -185,4 +147,8 @@ RiscVSbiEcall (
   IN UINTN      Ext
   );
 
-#endif
+EFI_STATUS
+EFIAPI
+SbiProbeExtension (
+  IN UINTN  Extension
+  );

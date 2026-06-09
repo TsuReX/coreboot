@@ -115,6 +115,21 @@ TranslateError (
     case SBI_ERR_ALREADY_AVAILABLE:
       return EFI_ALREADY_STARTED;
       break;
+    case SBI_ERR_NO_SHMEM:
+      return EFI_OUT_OF_RESOURCES;
+      break;
+    case SBI_ERR_INVALID_STATE:
+      return EFI_ABORTED;
+      break;
+    case SBI_ERR_BAD_RANGE:
+      return EFI_NOT_FOUND;
+      break;
+    case SBI_ERR_NOT_IMPLEMENTED:
+      return EFI_UNSUPPORTED;
+      break;
+    case SBI_ERR_TIMEOUT:
+      return EFI_TIMEOUT;
+      break;
     default:
       //
       // Reaches here only if SBI has defined a new error type
@@ -143,7 +158,7 @@ SbiSetTimer (
 }
 
 /**
-  Reset the system using SRST SBI extenion
+  Reset the system using SRST SBI extension
 
   @param[in]  ResetType            The SRST System Reset Type.
   @param[in]  ResetReason          The SRST System Reset Reason.
@@ -169,62 +184,26 @@ SbiSystemReset (
 }
 
 /**
-  Get firmware context of the calling hart.
+  Probe support for an extension in OpenSBI
 
-  @param[out] FirmwareContext      The firmware context pointer.
+  Check if the extension is supported by SBI.
+
+  @param    Extension   Extension ID to be probed
 **/
-VOID
+EFI_STATUS
 EFIAPI
-GetFirmwareContext (
-  OUT EFI_RISCV_FIRMWARE_CONTEXT  **FirmwareContext
+SbiProbeExtension (
+  IN UINTN  Extension
   )
 {
-  *FirmwareContext = (EFI_RISCV_FIRMWARE_CONTEXT *)RiscVGetSupervisorScratch ();
-}
+  SBI_RET  Ret;
 
-/**
-  Set firmware context of the calling hart.
+  Ret = SbiCall (
+          SBI_EXT_BASE,
+          SBI_EXT_BASE_PROBE_EXT,
+          1,
+          Extension
+          );
 
-  @param[in] FirmwareContext       The firmware context pointer.
-**/
-VOID
-EFIAPI
-SetFirmwareContext (
-  IN EFI_RISCV_FIRMWARE_CONTEXT  *FirmwareContext
-  )
-{
-  RiscVSetSupervisorScratch ((UINT64)FirmwareContext);
-}
-
-/**
-  Get pointer to OpenSBI Firmware Context
-
-  Get the pointer of firmware context through OpenSBI FW Extension SBI.
-
-  @param    FirmwareContextPtr   Pointer to retrieve pointer to the
-                                 Firmware Context.
-**/
-VOID
-EFIAPI
-GetFirmwareContextPointer (
-  IN OUT EFI_RISCV_FIRMWARE_CONTEXT  **FirmwareContextPtr
-  )
-{
-  GetFirmwareContext (FirmwareContextPtr);
-}
-
-/**
-  Set the pointer to OpenSBI Firmware Context
-
-  Set the pointer of firmware context through OpenSBI FW Extension SBI.
-
-  @param    FirmwareContextPtr   Pointer to Firmware Context.
-**/
-VOID
-EFIAPI
-SetFirmwareContextPointer (
-  IN EFI_RISCV_FIRMWARE_CONTEXT  *FirmwareContextPtr
-  )
-{
-  SetFirmwareContext (FirmwareContextPtr);
+  return TranslateError (Ret.Error);
 }

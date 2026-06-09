@@ -102,10 +102,35 @@ PlatformQemuUc32BaseInitialization (
   }
 }
 
-typedef VOID (*E820_SCAN_CALLBACK) (
-  EFI_E820_ENTRY64       *E820Entry,
-  EFI_HOB_PLATFORM_INFO  *PlatformInfoHob
-  );
+STATIC
+EFI_STATUS
+PlatformScanE820Tdx (
+  IN      E820_SCAN_CALLBACK     Callback,
+  IN OUT  EFI_HOB_PLATFORM_INFO  *PlatformInfoHob
+  )
+{
+  EFI_E820_ENTRY64      E820Entry;
+  EFI_PEI_HOB_POINTERS  Hob;
+
+  Hob.Raw = (UINT8 *)(UINTN)FixedPcdGet32 (PcdOvmfSecGhcbBase);
+
+  while (!END_OF_HOB_LIST (Hob)) {
+    if (Hob.Header->HobType == EFI_HOB_TYPE_RESOURCE_DESCRIPTOR) {
+      if ((Hob.ResourceDescriptor->ResourceType == EFI_RESOURCE_MEMORY_UNACCEPTED) ||
+          (Hob.ResourceDescriptor->ResourceType == EFI_RESOURCE_SYSTEM_MEMORY))
+      {
+        E820Entry.BaseAddr = Hob.ResourceDescriptor->PhysicalStart;
+        E820Entry.Length   = Hob.ResourceDescriptor->ResourceLength;
+        E820Entry.Type     = EfiAcpiAddressRangeMemory;
+        Callback (&E820Entry, PlatformInfoHob);
+      }
+    }
+
+    Hob.Raw = (UINT8 *)(Hob.Raw + Hob.Header->HobLength);
+  }
+
+  return EFI_SUCCESS;
+}
 
 /**
   Store first address not used by e820 RAM entries in
@@ -132,8 +157,13 @@ PlatformGetFirstNonAddressCB (
 }
 
 /**
-  Store the low (below 4G) memory size in
-  PlatformInfoHob->LowMemory
+  Store the low memory size in PlatformInfoHob->LowMemory.
+
+  The first memory block with base address zero is considered "low memory".
+  Traditionally this has been all memory below 4G.  When running under SVSM
+  there are multiple memory blocks below 4G though, because SVSM caves out a
+  chunk of memory for itself.  Only the first of these blocks is considered
+  low memory.
 **/
 STATIC
 VOID
@@ -142,21 +172,16 @@ PlatformGetLowMemoryCB (
   IN OUT EFI_HOB_PLATFORM_INFO  *PlatformInfoHob
   )
 {
-  UINT64  Candidate;
-
   if (E820Entry->Type != EfiAcpiAddressRangeMemory) {
     return;
   }
 
-  Candidate = E820Entry->BaseAddr + E820Entry->Length;
-  if (Candidate >= BASE_4GB) {
+  if (E820Entry->BaseAddr != 0) {
     return;
   }
 
-  if (PlatformInfoHob->LowMemory < Candidate) {
-    DEBUG ((DEBUG_INFO, "%a: LowMemory=0x%Lx\n", __func__, Candidate));
-    PlatformInfoHob->LowMemory = (UINT32)Candidate;
-  }
+  DEBUG ((DEBUG_INFO, "%a: LowMemory=0x%Lx\n", __func__, E820Entry->Length));
+  PlatformInfoHob->LowMemory = (UINT32)E820Entry->Length;
 }
 
 /**
@@ -176,7 +201,9 @@ PlatformAddHobCB (
 
   switch (E820Entry->Type) {
     case EfiAcpiAddressRangeMemory:
-      if (Base >= BASE_4GB) {
+      if (End <= PlatformInfoHob->LowMemory) {
+        // nothing, handled by PlatformGetLowMemoryCB()
+      } else {
         //
         // Round up the start address, and round down the end address.
         //
@@ -192,6 +219,22 @@ PlatformAddHobCB (
     case EfiAcpiAddressRangeReserved:
       BuildResourceDescriptorHob (EFI_RESOURCE_MEMORY_RESERVED, 0, Base, End - Base);
       DEBUG ((DEBUG_INFO, "%a: Reserved [0x%Lx, 0x%Lx)\n", __func__, Base, End));
+      break;
+    case EfiAcpiAddressRangeSoftReserved:
+      BuildResourceDescriptorHob (
+        EFI_RESOURCE_SYSTEM_MEMORY,
+        EFI_RESOURCE_ATTRIBUTE_PRESENT |
+        EFI_RESOURCE_ATTRIBUTE_INITIALIZED |
+        EFI_RESOURCE_ATTRIBUTE_UNCACHEABLE |
+        EFI_RESOURCE_ATTRIBUTE_WRITE_COMBINEABLE |
+        EFI_RESOURCE_ATTRIBUTE_WRITE_THROUGH_CACHEABLE |
+        EFI_RESOURCE_ATTRIBUTE_WRITE_BACK_CACHEABLE |
+        EFI_RESOURCE_ATTRIBUTE_TESTED |
+        EFI_RESOURCE_ATTRIBUTE_SPECIAL_PURPOSE,
+        Base,
+        End - Base
+        );
+      DEBUG ((DEBUG_INFO, "%a: SoftReserved [0x%Lx, 0x%Lx)\n", __func__, Base, End));
       break;
     default:
       DEBUG ((
@@ -343,8 +386,16 @@ PlatformScanE820 (
   EFI_E820_ENTRY64      E820Entry;
   UINTN                 Processed;
 
+  if (PlatformIgvmMemoryMapCheck ()) {
+    return PlatformIgvmScanE820 (Callback, PlatformInfoHob);
+  }
+
   if (PlatformInfoHob->HostBridgeDevId == CLOUDHV_DEVICE_ID) {
     return PlatformScanE820Pvh (Callback, PlatformInfoHob);
+  }
+
+  if (TdIsEnabled ()) {
+    return PlatformScanE820Tdx (Callback, PlatformInfoHob);
   }
 
   Status = QemuFwCfgFindFile ("etc/e820", &FwCfgItem, &FwCfgSize);
@@ -522,7 +573,8 @@ PlatformGetFirstNonAddress (
       break;
     case EFI_SUCCESS:
       if (FwCfgPciMmio64Mb <= 0x1000000) {
-        PlatformInfoHob->PcdPciMmio64Size = LShiftU64 (FwCfgPciMmio64Mb, 20);
+        PlatformInfoHob->PcdPciMmio64Size     = LShiftU64 (FwCfgPciMmio64Mb, 20);
+        PlatformInfoHob->PcdPciMmio64Override = TRUE;
         break;
       }
 
@@ -761,8 +813,10 @@ PlatformDynamicMmioWindow (
   AddrSpace = LShiftU64 (1, PlatformInfoHob->PhysMemAddressWidth);
   MmioSpace = LShiftU64 (1, PlatformInfoHob->PhysMemAddressWidth - 3);
 
-  if ((PlatformInfoHob->PcdPciMmio64Size < MmioSpace) &&
-      (PlatformInfoHob->PcdPciMmio64Base + MmioSpace < AddrSpace))
+  if (PlatformInfoHob->PcdPciMmio64Override) {
+    DEBUG ((DEBUG_INFO, "%a: using fwcfg override for mmio window\n", __func__));
+  } else if ((PlatformInfoHob->PcdPciMmio64Size < MmioSpace) &&
+             (PlatformInfoHob->PcdPciMmio64Base + MmioSpace < AddrSpace))
   {
     DEBUG ((DEBUG_INFO, "%a: using dynamic mmio window\n", __func__));
     DEBUG ((DEBUG_INFO, "%a:   Addr Space 0x%Lx (%Ld GB)\n", __func__, AddrSpace, RShiftU64 (AddrSpace, 30)));
@@ -898,6 +952,111 @@ PlatformScanHostProvided64BitPciMmioEnd (
   return EFI_NOT_FOUND;
 }
 
+VOID
+EFIAPI
+Switch4Level (
+  VOID
+  );
+
+/**
+   Configure x64 paging levels.
+
+
+   The OVMF ResetVector code will enter long mode with 5-level paging if the
+   following conditions are true:
+
+     (1) OVMF has been built with PcdUse5LevelPageTable = TRUE, and
+     (2) the CPU supports 5-level paging (aka la57), and
+     (3) the CPU supports gigabyte pages, and
+     (4) the VM is not running in SEV mode.
+
+   Condition (4) is a temporary stopgap for BaseMemEncryptSevLib not supporting
+   5-level paging yet.
+
+
+   This function looks at the virtual machine configuration, then decides
+   whenever it will continue to use 5-level paging or downgrade to 4-level
+   paging for better compatibility with older guest OS versions.
+
+   There is a fw_cfg config option to explicitly request 4 or 5-level paging
+   using 'qemu -fw_cfg name=opt/org.tianocode/PagingLevel,string=4|5'.  If the
+   option is present the requested paging level will be used.
+
+   Should that not be the case the function checks the size of the address space
+   needed, which is the RAM installed plus fw_cfg reservations.  The downgrade
+   to 4-level paging will happen for small guests where the address space needed
+   is lower than 1TB.
+
+
+   This function will also log the paging level used and the reason for that.
+**/
+STATIC
+VOID
+PlatformSetupPagingLevel (
+  IN OUT EFI_HOB_PLATFORM_INFO  *PlatformInfoHob
+  )
+{
+ #ifdef MDE_CPU_X64
+  UINT32      PagingLevel;
+  EFI_STATUS  Status;
+  IA32_CR4    Cr4;
+
+  Cr4.UintN = AsmReadCr4 ();
+  if (!Cr4.Bits.LA57) {
+    /* The OvmfPkg ResetVector has NOT turned on 5-level paging, log the reason. */
+    if (!PcdGetBool (PcdUse5LevelPageTable)) {
+      DEBUG ((DEBUG_INFO, "%a: using 4-level paging (PcdUse5LevelPageTable disabled)\n", __func__));
+    } else {
+      DEBUG ((DEBUG_INFO, "%a: using 4-level paging (la57 not supported by cpu)\n", __func__));
+    }
+
+    return;
+  }
+
+  Status = QemuFwCfgParseUint32 (
+             "opt/org.tianocore/PagingLevel",
+             FALSE,
+             &PagingLevel
+             );
+  switch (Status) {
+    case EFI_NOT_FOUND:
+      if (PlatformInfoHob->FirstNonAddress < (1ll << 40)) {
+        //
+        // If the highest address actually used is below 1TB switch back into
+        // 4-level paging mode for better compatibility with older guests.
+        //
+        DEBUG ((DEBUG_INFO, "%a: using 4-level paging (default for small guest)\n", __func__));
+        PagingLevel = 4;
+      } else {
+        DEBUG ((DEBUG_INFO, "%a: using 5-level paging (default for large guest)\n", __func__));
+        PagingLevel = 5;
+      }
+
+      break;
+    case EFI_SUCCESS:
+      if ((PagingLevel != 4) && (PagingLevel != 5)) {
+        DEBUG ((DEBUG_INFO, "%a: invalid paging level in fw_cfg: %d\n", __func__, PagingLevel));
+        return;
+      }
+
+      DEBUG ((DEBUG_INFO, "%a: using %d-level paging (fw_cfg override)\n", __func__, PagingLevel));
+      break;
+    default:
+      DEBUG ((DEBUG_WARN, "%a: QemuFwCfgParseUint32: %r\n", __func__, Status));
+      return;
+  }
+
+  if (PagingLevel == 4) {
+    Switch4Level ();
+  }
+
+  if (PagingLevel == 5) {
+    /* The OvmfPkg ResetVector has turned on 5-level paging, nothing to do here. */
+  }
+
+ #endif
+}
+
 /**
   Initialize the PhysMemAddressWidth field in PlatformInfoHob based on guest RAM size.
 **/
@@ -945,6 +1104,8 @@ PlatformAddressWidthInitialization (
     //
     PlatformGetFirstNonAddress (PlatformInfoHob);
   }
+
+  PlatformSetupPagingLevel (PlatformInfoHob);
 
   PlatformAddressWidthFromCpuid (PlatformInfoHob, TRUE);
   if (PlatformInfoHob->PhysMemAddressWidth != 0) {
@@ -1096,6 +1257,8 @@ PlatformQemuInitializeRam (
   EFI_STATUS     Status;
 
   DEBUG ((DEBUG_INFO, "%a called\n", __func__));
+
+  PlatformIgvmParamReserve ();
 
   //
   // Determine total memory size available
@@ -1356,6 +1519,20 @@ PlatformQemuInitializeRamForS3 (
       BuildMemoryAllocationHob (
         (EFI_PHYSICAL_ADDRESS)(UINTN)FixedPcdGet32 (PcdOvmfWorkAreaBase),
         (UINT64)(UINTN)FixedPcdGet32 (PcdOvmfWorkAreaSize),
+        PlatformInfoHob->S3Supported ? EfiACPIMemoryNVS : EfiBootServicesData
+        );
+    }
+
+    if (FixedPcdGet32 (PcdOvmfEarlyMemDebugLogSize) != 0) {
+      //
+      // Reserve the Early Memory Debug Log buffer
+      //
+      // Since this memory range will be used on S3 resume, it must be
+      // reserved as ACPI NVS.
+      //
+      BuildMemoryAllocationHob (
+        (EFI_PHYSICAL_ADDRESS)(UINTN)FixedPcdGet32 (PcdOvmfEarlyMemDebugLogBase),
+        (UINT64)(UINTN)FixedPcdGet32 (PcdOvmfEarlyMemDebugLogSize),
         PlatformInfoHob->S3Supported ? EfiACPIMemoryNVS : EfiBootServicesData
         );
     }

@@ -12,8 +12,7 @@
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
-#ifndef _PRIVILEGE_POLYMORPHIC_H_
-#define _PRIVILEGE_POLYMORPHIC_H_
+#pragma once
 
 #include <Uefi/UefiBaseType.h>
 
@@ -156,18 +155,12 @@ VariableSmmIsNonPrimaryBufferValid (
   );
 
 /**
-  Whether the TCG or TCG2 protocols are installed in the UEFI protocol database.
-  This information is used by the MorLock code to infer whether an existing
-  MOR variable is legitimate or not.
+  Whether the MOR variable is legitimate or not.
 
-  @retval TRUE  Either the TCG or TCG2 protocol is installed in the UEFI
-                protocol database
-  @retval FALSE Neither the TCG nor the TCG2 protocol is installed in the UEFI
-                protocol database
+  @retval TRUE  MOR Variable is legitimate.
+  @retval FALSE MOR Variable in not legitimate.
 **/
 BOOLEAN
-VariableHaveTcgProtocols (
+VariableIsMorVariableLegitimate (
   VOID
   );
-
-#endif

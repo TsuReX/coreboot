@@ -9,8 +9,7 @@
 
 **/
 
-#ifndef EDKII_REDFISH_PLATFORM_CONFIG_DXE_H_
-#define EDKII_REDFISH_PLATFORM_CONFIG_DXE_H_
+#pragma once
 
 #include <Uefi.h>
 
@@ -110,11 +109,9 @@ typedef struct {
 } REDFISH_STACK;
 
 #define REDFISH_PLATFORM_CONFIG_PRIVATE_FROM_THIS(a)  BASE_CR (a, REDFISH_PLATFORM_CONFIG_PRIVATE, Protocol)
-#define REGULAR_EXPRESSION_INCLUDE_ALL   L".*"
-#define CONFIGURE_LANGUAGE_PREFIX        "x-UEFI-redfish-"
-#define REDFISH_PLATFORM_CONFIG_VERSION  0x00010000
-
-#define REDFISH_MENU_PATH_SIZE  8
+#define REGULAR_EXPRESSION_INCLUDE_ALL  L".*"
+#define CONFIGURE_LANGUAGE_PREFIX       "x-UEFI-redfish-"
+#define REDFISH_MENU_PATH_SIZE          8
 
 // Definitions of Redfish platform config capability
 #define REDFISH_PLATFORM_CONFIG_BUILD_MENU_PATH   0x000000001
@@ -133,5 +130,3 @@ CHAR8 *
 StrToAsciiStr (
   IN  EFI_STRING  UnicodeString
   );
-
-#endif

@@ -8,7 +8,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#include "PiSmmCpuDxeSmm.h"
+#include "PiSmmCpuCommon.h"
 
 //
 // Slots for all MTRR( FIXED MTRR + VARIABLE MTRR + MTRR_LIB_IA32_MTRR_DEF_TYPE)
@@ -20,7 +20,7 @@ UINTN                        mSmmMpSyncDataSize;
 SMM_CPU_SEMAPHORES           mSmmCpuSemaphores;
 UINTN                        mSemaphoreSize;
 SPIN_LOCK                    *mPFLock = NULL;
-SMM_CPU_SYNC_MODE            mCpuSmmSyncMode;
+MM_CPU_SYNC_MODE             mCpuSmmSyncMode;
 BOOLEAN                      mMachineCheckSupported = FALSE;
 MM_COMPLETION                mSmmStartupThisApToken;
 
@@ -234,23 +234,22 @@ SmmWaitForApArrival (
 {
   UINT64   Timer;
   UINTN    Index;
-  BOOLEAN  LmceEn;
-  BOOLEAN  LmceSignal;
   UINT32   DelayedCount;
   UINT32   BlockedCount;
+  UINT32   DisabledCount;
+  BOOLEAN  SyncNeeded;
 
   PERF_FUNCTION_BEGIN ();
 
-  DelayedCount = 0;
-  BlockedCount = 0;
+  DelayedCount  = 0;
+  BlockedCount  = 0;
+  DisabledCount = 0;
 
   ASSERT (SmmCpuSyncGetArrivedCpuCount (mSmmMpSyncData->SyncContext) <= mNumberOfCpus);
 
-  LmceEn     = FALSE;
-  LmceSignal = FALSE;
-  if (mMachineCheckSupported) {
-    LmceEn     = IsLmceOsEnabled ();
-    LmceSignal = IsLmceSignaled ();
+  SyncNeeded = IsCpuSyncAlwaysNeeded ();
+  if (!SyncNeeded) {
+    SyncNeeded = !(mMachineCheckSupported && IsLmceOsEnabled () && IsLmceSignaled ());
   }
 
   //
@@ -268,7 +267,7 @@ SmmWaitForApArrival (
   // Sync with APs 1st timeout
   //
   for (Timer = StartSyncTimer ();
-       !IsSyncTimerTimeout (Timer, mTimeoutTicker) && !(LmceEn && LmceSignal);
+       !IsSyncTimerTimeout (Timer, mTimeoutTicker) && SyncNeeded;
        )
   {
     mSmmMpSyncData->AllApArrivedWithException = AllCpusInSmmExceptBlockedDisabled ();
@@ -321,12 +320,13 @@ SmmWaitForApArrival (
     }
   }
 
+  mSmmMpSyncData->AllApArrivedWithException = AllCpusInSmmExceptBlockedDisabled ();
   if (!mSmmMpSyncData->AllApArrivedWithException) {
     //
-    // Check for the Blocked & Delayed Case.
+    // Check for the Disabled & Blocked & Delayed Case.
     //
-    GetSmmDelayedBlockedDisabledCount (&DelayedCount, &BlockedCount, NULL);
-    DEBUG ((DEBUG_INFO, "SmmWaitForApArrival: Delayed AP Count = %d, Blocked AP Count = %d\n", DelayedCount, BlockedCount));
+    GetSmmDelayedBlockedDisabledCount (&DelayedCount, &BlockedCount, &DisabledCount);
+    DEBUG ((DEBUG_ERROR, "SmmWaitForApArrival: Failed to wait all APs enter SMI. Delayed AP Count = %d, Blocked AP Count = %d, Disabled AP Count = %d\n", DelayedCount, BlockedCount, DisabledCount));
   }
 
   PERF_FUNCTION_END ();
@@ -454,8 +454,8 @@ ResetTokens (
 **/
 VOID
 BSPHandler (
-  IN      UINTN              CpuIndex,
-  IN      SMM_CPU_SYNC_MODE  SyncMode
+  IN      UINTN             CpuIndex,
+  IN      MM_CPU_SYNC_MODE  SyncMode
   )
 {
   UINTN          CpuCount;
@@ -504,7 +504,7 @@ BSPHandler (
   //
   // If Traditional Sync Mode or need to configure MTRRs: gather all available APs.
   //
-  if ((SyncMode == SmmCpuSyncModeTradition) || SmmCpuFeaturesNeedConfigureMtrrs ()) {
+  if ((SyncMode == MmCpuSyncModeTradition) || SmmCpuFeaturesNeedConfigureMtrrs ()) {
     //
     // Wait for APs to arrive
     //
@@ -520,16 +520,19 @@ BSPHandler (
     ApCount = CpuCount - 1;
 
     //
-    // Wait for all APs to get ready for programming MTRRs
+    // Wait for all APs of arrival at this point
     //
-    SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex);
+    SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex); /// #1: Wait APs
+
+    //
+    // Signal all APs it's time for:
+    // 1. Backup MTRRs if needed.
+    // 2. Perform SMM CPU Platform Hook before executing MMI Handler.
+    //
+    ReleaseAllAPs (); /// #2: Signal APs
 
     if (SmmCpuFeaturesNeedConfigureMtrrs ()) {
       //
-      // Signal all APs it's time for backup MTRRs
-      //
-      ReleaseAllAPs ();
-
       //
       // SmmCpuSyncWaitForAPs() may wait for ever if an AP happens to enter SMM at
       // exactly this point. Please make sure PcdCpuSmmMaxSyncLoops has been set
@@ -543,12 +546,12 @@ BSPHandler (
       //
       // Wait for all APs to complete their MTRR saving
       //
-      SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex);
+      SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex); /// #3: Wait APs
 
       //
       // Let all processors program SMM MTRRs together
       //
-      ReleaseAllAPs ();
+      ReleaseAllAPs (); /// #4: Signal APs
 
       //
       // SmmCpuSyncWaitForAPs() may wait for ever if an AP happens to enter SMM at
@@ -560,8 +563,25 @@ BSPHandler (
       //
       // Wait for all APs to complete their MTRR programming
       //
-      SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex);
+      SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex); /// #5: Wait APs
+
+      //
+      // Notify all APs to continue
+      //
+      ReleaseAllAPs (); /// #6: Signal APs
     }
+  }
+
+  //
+  // Perform SMM CPU Platform Hook before executing MMI Handler
+  //
+  SmmCpuPlatformHookBeforeMmiHandler ();
+
+  if ((SyncMode == MmCpuSyncModeTradition) || SmmCpuFeaturesNeedConfigureMtrrs ()) {
+    //
+    // Wait for all APs of arrival at this point
+    //
+    SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex); /// #7: Wait APs
   }
 
   //
@@ -594,7 +614,7 @@ BSPHandler (
   // make those APs to exit SMI synchronously. APs which arrive later will be excluded and
   // will run through freely.
   //
-  if ((SyncMode != SmmCpuSyncModeTradition) && !SmmCpuFeaturesNeedConfigureMtrrs ()) {
+  if ((SyncMode != MmCpuSyncModeTradition) && !SmmCpuFeaturesNeedConfigureMtrrs ()) {
     //
     // Lock door for late coming CPU checkin and retrieve the Arrived number of APs
     //
@@ -625,18 +645,18 @@ BSPHandler (
   // Notify all APs to exit
   //
   *mSmmMpSyncData->InsideSmm = FALSE;
-  ReleaseAllAPs ();
+  ReleaseAllAPs (); /// #8: Signal APs
 
   if (SmmCpuFeaturesNeedConfigureMtrrs ()) {
     //
     // Wait for all APs the readiness to program MTRRs
     //
-    SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex);
+    SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex); /// #9: Wait APs
 
     //
     // Signal APs to restore MTRRs
     //
-    ReleaseAllAPs ();
+    ReleaseAllAPs (); /// #10: Signal APs
 
     //
     // Restore OS MTRRs
@@ -649,12 +669,12 @@ BSPHandler (
     //
     // Wait for all APs to complete their pending tasks including MTRR programming if needed.
     //
-    SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex);
+    SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex); /// #11: Wait APs
 
     //
     // Signal APs to Reset states/semaphore for this processor
     //
-    ReleaseAllAPs ();
+    ReleaseAllAPs (); /// #12: Signal APs
   }
 
   if (mSmmDebugAgentSupport) {
@@ -679,7 +699,7 @@ BSPHandler (
   // Gather APs to exit SMM synchronously. Note the Present flag is cleared by now but
   // WaitForAllAps does not depend on the Present flag.
   //
-  SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex);
+  SmmCpuSyncWaitForAPs (mSmmMpSyncData->SyncContext, ApCount, CpuIndex); /// #13: Wait APs
 
   //
   // At this point, all APs should have exited from APHandler().
@@ -722,9 +742,9 @@ BSPHandler (
 **/
 VOID
 APHandler (
-  IN      UINTN              CpuIndex,
-  IN      BOOLEAN            ValidSmi,
-  IN      SMM_CPU_SYNC_MODE  SyncMode
+  IN      UINTN             CpuIndex,
+  IN      BOOLEAN           ValidSmi,
+  IN      MM_CPU_SYNC_MODE  SyncMode
   )
 {
   UINT64         Timer;
@@ -801,19 +821,21 @@ APHandler (
   //
   *(mSmmMpSyncData->CpuData[CpuIndex].Present) = TRUE;
 
-  if ((SyncMode == SmmCpuSyncModeTradition) || SmmCpuFeaturesNeedConfigureMtrrs ()) {
+  if ((SyncMode == MmCpuSyncModeTradition) || SmmCpuFeaturesNeedConfigureMtrrs ()) {
     //
     // Notify BSP of arrival at this point
     //
-    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #1: Signal BSP
+
+    //
+    // Wait for the signal from BSP to:
+    // 1. Backup MTRRs if needed.
+    // 2. Perform SMM CPU Platform Hook before executing MMI Handler.
+    //
+    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #2: Wait BSP
   }
 
   if (SmmCpuFeaturesNeedConfigureMtrrs ()) {
-    //
-    // Wait for the signal from BSP to backup MTRRs
-    //
-    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
-
     //
     // Backup OS MTRRs
     //
@@ -822,12 +844,12 @@ APHandler (
     //
     // Signal BSP the completion of this AP
     //
-    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #3: Signal BSP
 
     //
     // Wait for BSP's signal to program MTRRs
     //
-    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #4: Wait BSP
 
     //
     // Replace OS MTRRs with SMI MTRRs
@@ -837,14 +859,31 @@ APHandler (
     //
     // Signal BSP the completion of this AP
     //
-    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #5: Signal BSP
+
+    //
+    // Wait for BSP's signal to continue
+    //
+    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #6: Wait BSP
+  }
+
+  //
+  // Perform SMM CPU Platform Hook before executing MMI Handler
+  //
+  SmmCpuPlatformHookBeforeMmiHandler ();
+
+  if ((SyncMode == MmCpuSyncModeTradition) || SmmCpuFeaturesNeedConfigureMtrrs ()) {
+    //
+    // Notify BSP of arrival at this point
+    //
+    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #7: Signal BSP
   }
 
   while (TRUE) {
     //
     // Wait for something to happen
     //
-    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #8: Wait BSP
 
     //
     // Check if BSP wants to exit SMM
@@ -884,12 +923,12 @@ APHandler (
     //
     // Notify BSP the readiness of this AP to program MTRRs
     //
-    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #9: Signal BSP
 
     //
     // Wait for the signal from BSP to program MTRRs
     //
-    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #10: Wait BSP
 
     //
     // Restore OS MTRRs
@@ -902,12 +941,12 @@ APHandler (
     //
     // Notify BSP the readiness of this AP to Reset states/semaphore for this processor
     //
-    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #11: Signal BSP
 
     //
     // Wait for the signal from BSP to Reset states/semaphore for this processor
     //
-    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+    SmmCpuSyncWaitForBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #12: Wait BSP
   }
 
   //
@@ -918,7 +957,7 @@ APHandler (
   //
   // Notify BSP the readiness of this AP to exit SMM
   //
-  SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex);
+  SmmCpuSyncReleaseBsp (mSmmMpSyncData->SyncContext, CpuIndex, BspIndex); /// #13: Signal BSP
 }
 
 /**
@@ -991,10 +1030,17 @@ AllocateTokenBuffer (
   // Separate the Spin_lock and Proc_token because the alignment requires by Spin_Lock.
   //
   SpinLockBuffer = AllocatePool (SpinLockSize * TokenCountPerChunk);
-  ASSERT (SpinLockBuffer != NULL);
+  if (SpinLockBuffer == NULL) {
+    ASSERT (SpinLockBuffer != NULL);
+    return NULL;
+  }
 
   ProcTokens = AllocatePool (sizeof (PROCEDURE_TOKEN) * TokenCountPerChunk);
-  ASSERT (ProcTokens != NULL);
+  if (ProcTokens == NULL) {
+    ASSERT (ProcTokens != NULL);
+    FreePool (SpinLockBuffer);
+    return NULL;
+  }
 
   for (Index = 0; Index < TokenCountPerChunk; Index++) {
     SpinLock = (SPIN_LOCK *)(SpinLockBuffer + SpinLockSize * Index);
@@ -1131,7 +1177,7 @@ InternalSmmStartupThisAp (
   }
 
   if (!(*(mSmmMpSyncData->CpuData[CpuIndex].Present))) {
-    if (mSmmMpSyncData->EffectiveSyncMode == SmmCpuSyncModeTradition) {
+    if (mSmmMpSyncData->EffectiveSyncMode == MmCpuSyncModeTradition) {
       DEBUG ((DEBUG_ERROR, "!mSmmMpSyncData->CpuData[%d].Present\n", CpuIndex));
     }
 
@@ -1616,7 +1662,7 @@ SmiRendezvous (
       InitializeSpinLock (mSmmMpSyncData->CpuData[CpuIndex].Busy);
     }
 
-    if (FeaturePcdGet (PcdCpuSmmProfileEnable)) {
+    if (mSmmProfileEnabled) {
       ActivateSmmProfile (CpuIndex);
     }
 
@@ -1677,7 +1723,7 @@ SmiRendezvous (
           }
         }
 
-        if (FeaturePcdGet (PcdCpuSmmProfileEnable)) {
+        if (mSmmProfileEnabled) {
           SmmProfileRecordSmiNum ();
         }
 
@@ -1805,7 +1851,11 @@ InitializeSmmCpuSemaphores (
   DEBUG ((DEBUG_INFO, "Total Semaphores Size = 0x%x\n", TotalSize));
   Pages          = EFI_SIZE_TO_PAGES (TotalSize);
   SemaphoreBlock = AllocatePages (Pages);
-  ASSERT (SemaphoreBlock != NULL);
+  if (SemaphoreBlock == NULL) {
+    ASSERT (SemaphoreBlock != NULL);
+    return;
+  }
+
   ZeroMem (SemaphoreBlock, TotalSize);
 
   SemaphoreAddr                                   = (UINTN)SemaphoreBlock;
@@ -1845,6 +1895,10 @@ InitializeMpSyncData (
   UINTN  CpuIndex;
 
   if (mSmmMpSyncData != NULL) {
+    if (mSmmMpSyncData->SyncContext != NULL) {
+      SmmCpuSyncContextDeinit (mSmmMpSyncData->SyncContext);
+    }
+
     //
     // mSmmMpSyncDataSize includes one structure of SMM_DISPATCHER_MP_SYNC_DATA, one
     // CpuData array of SMM_CPU_DATA_BLOCK and one CandidateBsp array of BOOLEAN.
@@ -1924,6 +1978,7 @@ InitializeMpServiceData (
   CPUID_VERSION_INFO_EDX          RegEdx;
   UINT32                          MaxExtendedFunction;
   CPUID_VIR_PHY_ADDRESS_SIZE_EAX  VirPhyAddressSize;
+  BOOLEAN                         RelaxedMode;
 
   //
   // Determine if this CPU supports machine check
@@ -1943,7 +1998,11 @@ InitializeMpServiceData (
                        (sizeof (SMM_CPU_DATA_BLOCK) + sizeof (BOOLEAN)) * gSmmCpuPrivate->SmmCoreEntryContext.NumberOfCpus;
   mSmmMpSyncData = (SMM_DISPATCHER_MP_SYNC_DATA *)AllocatePages (EFI_SIZE_TO_PAGES (mSmmMpSyncDataSize));
   ASSERT (mSmmMpSyncData != NULL);
-  mCpuSmmSyncMode = (SMM_CPU_SYNC_MODE)PcdGet8 (PcdCpuSmmSyncMode);
+
+  ZeroMem (mSmmMpSyncData, mSmmMpSyncDataSize);
+  RelaxedMode = FALSE;
+  GetSmmCpuSyncConfigData (&RelaxedMode, NULL, NULL);
+  mCpuSmmSyncMode = RelaxedMode ? MmCpuSyncModeRelaxedAp : MmCpuSyncModeTradition;
   InitializeMpSyncData ();
 
   //

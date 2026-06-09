@@ -5,8 +5,7 @@
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
-#ifndef SMBIOS_STRING_TABLE_H_
-#define SMBIOS_STRING_TABLE_H_
+#pragma once
 
 /** A structure representing a string in the string table.
 */
@@ -116,4 +115,26 @@ StringTableFree (
   IN STRING_TABLE *CONST  StrTable
   );
 
-#endif // SMBIOS_STRING_TABLE_H_
+/** Allocate a zeroed buffer for a SMBIOS record, including the string area.
+
+  Per SMBIOS Specification Section 6.1.3, if the structure has no strings the
+  formatted section is followed by two null (00h) bytes.  If strings are
+  present each string is null-terminated and the set is terminated by an
+  additional null byte.  This function encapsulates that rule so callers do
+  not need to account for the terminator explicitly.
+
+  @param[in]  StructSize  Size of the fixed-size part of the SMBIOS structure.
+  @param[in]  StrTable    Optional pointer to a populated string table.
+                          If NULL, the allocation includes only the two-byte
+                          double-NULL terminator.
+                          If non-NULL, the allocation includes the full string
+                          area as returned by StringTableGetStringSetSize().
+
+  @return  Pointer to the allocated SMBIOS record buffer, or NULL on failure.
+**/
+VOID *
+EFIAPI
+AllocateSmbiosRecord (
+  IN        UINTN   StructSize,
+  IN  STRING_TABLE  *StrTable    OPTIONAL
+  );

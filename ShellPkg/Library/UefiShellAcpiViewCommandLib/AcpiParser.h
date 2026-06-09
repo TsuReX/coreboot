@@ -3,12 +3,11 @@
 
   Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
   Copyright (c) 2016 - 2024, Arm Limited. All rights reserved.
-  Copyright (c) 2022, AMD Incorporated. All rights reserved.
+  Copyright (C) 2022 - 2026, Advanced Micro Devices, Inc. All rights reserved.
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
-#ifndef ACPIPARSER_H_
-#define ACPIPARSER_H_
+#pragma once
 
 #define OUTPUT_FIELD_COLUMN_WIDTH  36
 
@@ -607,6 +606,27 @@ ParseAcpiAest (
   );
 
 /**
+  This function parses the ACPI AGDI table.
+  When trace is enabled this function parses the AGDI table and
+  traces the ACPI table fields.
+
+  This function also performs validation of the ACPI table fields.
+
+  @param [in] Trace              If TRUE, trace the ACPI fields.
+  @param [in] Ptr                Pointer to the start of the buffer.
+  @param [in] AcpiTableLength    Length of the ACPI table.
+  @param [in] AcpiTableRevision  Revision of the ACPI table.
+**/
+VOID
+EFIAPI
+ParseAcpiAgdi (
+  IN BOOLEAN  Trace,
+  IN UINT8    *Ptr,
+  IN UINT32   AcpiTableLength,
+  IN UINT8    AcpiTableRevision
+  );
+
+/**
   This function parses the ACPI APMT table.
   When trace is enabled this function parses the APMT table and
   traces the ACPI table fields.
@@ -768,6 +788,27 @@ ParseAcpiFacs (
 VOID
 EFIAPI
 ParseAcpiFadt (
+  IN BOOLEAN  Trace,
+  IN UINT8    *Ptr,
+  IN UINT32   AcpiTableLength,
+  IN UINT8    AcpiTableRevision
+  );
+
+/**
+  This function parses the ACPI FPDT table.
+  This function parses the FPDT table and optionally traces the ACPI
+  table fields.
+
+  This function also performs validation of the ACPI table fields.
+
+  @param [in] Trace              If TRUE, trace the ACPI fields.
+  @param [in] Ptr                Pointer to the start of the buffer.
+  @param [in] AcpiTableLength    Length of the ACPI table.
+  @param [in] AcpiTableRevision  Revision of the ACPI table.
+**/
+VOID
+EFIAPI
+ParseAcpiFpdt (
   IN BOOLEAN  Trace,
   IN UINT8    *Ptr,
   IN UINT32   AcpiTableLength,
@@ -1007,6 +1048,71 @@ ParseAcpiPptt (
   );
 
 /**
+  This function parses the ACPI RAS2 table.
+  When trace is enabled this function parses the RAS2 table and
+  traces the ACPI table fields.
+
+  This function parses the RAS2 ACPI table along with PCC Entries
+
+  This function also performs validation of the ACPI table fields.
+
+  @param [in] Trace              If TRUE, trace the ACPI fields.
+  @param [in] Ptr                Pointer to the start of the buffer.
+  @param [in] AcpiTableLength    Length of the ACPI table.
+  @param [in] AcpiTableRevision  Revision of the ACPI table.
+**/
+VOID
+EFIAPI
+ParseAcpiRas2 (
+  IN BOOLEAN  Trace,
+  IN UINT8    *Ptr,
+  IN UINT32   AcpiTableLength,
+  IN UINT8    AcpiTableRevision
+  );
+
+/**
+  This function parses the ACPI RASF table.
+  When trace is enabled this function parses the RASF table and
+  traces the ACPI table fields.
+
+  This function parses the RASF ACPI table
+
+  This function also performs validation of the ACPI table fields.
+
+  @param [in] Trace              If TRUE, trace the ACPI fields.
+  @param [in] Ptr                Pointer to the start of the buffer.
+  @param [in] AcpiTableLength    Length of the ACPI table.
+  @param [in] AcpiTableRevision  Revision of the ACPI table.
+**/
+VOID
+EFIAPI
+ParseAcpiRasf (
+  IN BOOLEAN  Trace,
+  IN UINT8    *Ptr,
+  IN UINT32   AcpiTableLength,
+  IN UINT8    AcpiTableRevision
+  );
+
+/**
+  This function parses the ACPI RIMT table.
+  When trace is enabled this function parses the RIMT table and
+  traces the ACPI table fields.
+
+  @param [in] Trace              If TRUE, trace the ACPI fields.
+  @param [in] Ptr                Pointer to the start of the buffer.
+  @param [in] AcpiTableLength    Length of the ACPI table.
+  @param [in] AcpiTableRevision  Revision of the ACPI table.
+**/
+VOID
+EFIAPI
+ParseAcpiRimt (
+  IN BOOLEAN  Trace,
+  IN UINT8    *Ptr,
+  IN UINT32   AcpiTableLength,
+  IN UINT8    AcpiTableRevision
+  );
+
+/**
   This function parses the ACPI RSDP table.
 
   This function invokes the parser for the XSDT table.
@@ -1123,6 +1229,23 @@ ParseAcpiSsdt (
   );
 
 /**
+  This function parses the ACPI TPM2 table.
+
+  @param [in] Trace              If TRUE, trace the ACPI fields.
+  @param [in] Ptr                Pointer to the start of the buffer.
+  @param [in] AcpiTableLength    Length of the ACPI table.
+  @param [in] AcpiTableRevision  Revision of the ACPI table.
+**/
+VOID
+EFIAPI
+ParseAcpiTpm2 (
+  IN BOOLEAN  Trace,
+  IN UINT8    *Ptr,
+  IN UINT32   AcpiTableLength,
+  IN UINT8    AcpiTableRevision
+  );
+
+/**
   This function parses the ACPI WSMT table.
 
   @param [in] Trace              If TRUE, trace the ACPI fields.
@@ -1158,5 +1281,3 @@ ParseAcpiXsdt (
   IN UINT32   AcpiTableLength,
   IN UINT8    AcpiTableRevision
   );
-
-#endif // ACPIPARSER_H_

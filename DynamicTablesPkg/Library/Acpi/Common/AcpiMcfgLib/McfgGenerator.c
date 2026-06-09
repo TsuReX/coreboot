@@ -2,6 +2,7 @@
   MCFG Table Generator
 
   Copyright (c) 2017 - 2019, ARM Limited. All rights reserved.
+  Copyright (C) 2025, Advanced Micro Devices, Inc. All rights reserved.
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
   @par Reference(s):
@@ -25,9 +26,9 @@
 /** ARM standard MCFG Generator
 
 Requirements:
-  The following Configuration Manager Object(s) are required by
-  this Generator:
-  - EArchCommonObjPciConfigSpaceInfo
+  This Generator requires the following Configuration Manager Object(s):
+  - EArchCommonObjMcfgPciConfigSpaceInfo (primary, preferred)
+  - EArchCommonObjPciConfigSpaceInfo (secondary, for backward compatibility)
 */
 
 #pragma pack(1)
@@ -53,6 +54,14 @@ typedef
 GET_OBJECT_LIST (
   EObjNameSpaceArchCommon,
   EArchCommonObjPciConfigSpaceInfo,
+  CM_ARCH_COMMON_PCI_CONFIG_SPACE_INFO
+  );
+
+/** Retrieve the MCFG PCI Configuration Space Information.
+*/
+GET_OBJECT_LIST (
+  EObjNameSpaceArchCommon,
+  EArchCommonObjMcfgPciConfigSpaceInfo,
   CM_ARCH_COMMON_PCI_CONFIG_SPACE_INFO
   );
 
@@ -154,12 +163,22 @@ BuildMcfgTable (
   }
 
   *Table = NULL;
-  Status = GetEArchCommonObjPciConfigSpaceInfo (
+  Status = GetEArchCommonObjMcfgPciConfigSpaceInfo (
              CfgMgrProtocol,
              CM_NULL_TOKEN,
              &PciConfigSpaceInfoList,
              &ConfigurationSpaceCount
              );
+  if (Status == EFI_NOT_FOUND) {
+    // Fallback to the older object if the new one is not found.
+    Status = GetEArchCommonObjPciConfigSpaceInfo (
+               CfgMgrProtocol,
+               CM_NULL_TOKEN,
+               &PciConfigSpaceInfoList,
+               &ConfigurationSpaceCount
+               );
+  }
+
   if (EFI_ERROR (Status)) {
     DEBUG ((
       DEBUG_ERROR,
@@ -306,7 +325,7 @@ ACPI_TABLE_GENERATOR  McfgGenerator = {
   // Minimum supported ACPI Table Revision
   EFI_ACPI_MEMORY_MAPPED_CONFIGURATION_SPACE_ACCESS_TABLE_REVISION,
   // Creator ID
-  TABLE_GENERATOR_CREATOR_ID_ARM,
+  TABLE_GENERATOR_CREATOR_ID,
   // Creator Revision
   MCFG_GENERATOR_REVISION,
   // Build Table function

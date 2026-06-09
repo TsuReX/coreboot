@@ -87,7 +87,6 @@ STATIC IMAGE_PROPERTIES_PRIVATE_DATA  mImagePropertiesPrivateData = {
 STATIC EFI_LOCK  mMemoryAttributesTableLock = EFI_INITIALIZE_LOCK_VARIABLE (TPL_NOTIFY);
 
 BOOLEAN                      mMemoryAttributesTableEnable      = TRUE;
-BOOLEAN                      mMemoryAttributesTableEndOfDxe    = FALSE;
 EFI_MEMORY_ATTRIBUTES_TABLE  *mMemoryAttributesTable           = NULL;
 BOOLEAN                      mMemoryAttributesTableReadyToBoot = FALSE;
 BOOLEAN                      gMemoryAttributesTableForwardCfi  = TRUE;
@@ -149,7 +148,10 @@ InstallMemoryAttributesTable (
 
   do {
     MemoryMap = AllocatePool (MemoryMapSize);
-    ASSERT (MemoryMap != NULL);
+    if (MemoryMap == NULL) {
+      ASSERT (MemoryMap != NULL);
+      return;
+    }
 
     Status = CoreGetMemoryMapWithSeparatedImageSection (
                &MemoryMapSize,
@@ -180,7 +182,12 @@ InstallMemoryAttributesTable (
   // Allocate MemoryAttributesTable
   //
   MemoryAttributesTable = AllocatePool (sizeof (EFI_MEMORY_ATTRIBUTES_TABLE) + DescriptorSize * RuntimeEntryCount);
-  ASSERT (MemoryAttributesTable != NULL);
+  if (MemoryAttributesTable == NULL) {
+    ASSERT (MemoryAttributesTable != NULL);
+    FreePool (MemoryMapStart);
+    return;
+  }
+
   MemoryAttributesTable->Version         = EFI_MEMORY_ATTRIBUTES_TABLE_VERSION;
   MemoryAttributesTable->NumberOfEntries = RuntimeEntryCount;
   MemoryAttributesTable->DescriptorSize  = (UINT32)DescriptorSize;
@@ -282,7 +289,6 @@ InstallMemoryAttributesTableOnEndOfDxe (
   IN VOID       *Context
   )
 {
-  mMemoryAttributesTableEndOfDxe = TRUE;
   InstallMemoryAttributesTable ();
 
   DEBUG_CODE_BEGIN ();
@@ -395,11 +401,14 @@ MergeMemoryMap (
   NewMemoryMapEntry = MemoryMap;
   MemoryMapEnd      = (EFI_MEMORY_DESCRIPTOR *)((UINT8 *)MemoryMap + *MemoryMapSize);
   while ((UINTN)MemoryMapEntry < (UINTN)MemoryMapEnd) {
-    CopyMem (NewMemoryMapEntry, MemoryMapEntry, sizeof (EFI_MEMORY_DESCRIPTOR));
+    CopyMem (NewMemoryMapEntry, MemoryMapEntry, DescriptorSize);
     NextMemoryMapEntry = NEXT_MEMORY_DESCRIPTOR (MemoryMapEntry, DescriptorSize);
 
     do {
-      MergeGuardPages (NewMemoryMapEntry, NextMemoryMapEntry->PhysicalStart);
+      if ((UINTN)NextMemoryMapEntry < (UINTN)MemoryMapEnd) {
+        MergeGuardPages (NewMemoryMapEntry, NextMemoryMapEntry->PhysicalStart);
+      }
+
       MemoryBlockLength = LShiftU64 (NewMemoryMapEntry->NumberOfPages, EFI_PAGE_SHIFT);
       if (((UINTN)NextMemoryMapEntry < (UINTN)MemoryMapEnd) &&
           (NewMemoryMapEntry->Type == NextMemoryMapEntry->Type) &&
@@ -426,7 +435,7 @@ MergeMemoryMap (
 
 /**
   Enforce memory map attributes.
-  This function will set EfiRuntimeServicesData/EfiMemoryMappedIO/EfiMemoryMappedIOPortSpace to be EFI_MEMORY_XP.
+  This function will set EfiRuntimeServicesData to be EFI_MEMORY_XP.
 
   @param  MemoryMap              A pointer to the buffer in which firmware places
                                  the current memory map.
@@ -447,18 +456,23 @@ EnforceMemoryMapAttribute (
   MemoryMapEntry = MemoryMap;
   MemoryMapEnd   = (EFI_MEMORY_DESCRIPTOR *)((UINT8 *)MemoryMap + MemoryMapSize);
   while ((UINTN)MemoryMapEntry < (UINTN)MemoryMapEnd) {
-    switch (MemoryMapEntry->Type) {
-      case EfiRuntimeServicesCode:
-        // do nothing
-        break;
-      case EfiRuntimeServicesData:
-      case EfiMemoryMappedIO:
-      case EfiMemoryMappedIOPortSpace:
-        MemoryMapEntry->Attribute |= EFI_MEMORY_XP;
-        break;
-      case EfiReservedMemoryType:
-      case EfiACPIMemoryNVS:
-        break;
+    if ((MemoryMapEntry->Attribute & EFI_MEMORY_ACCESS_MASK) == 0) {
+      switch (MemoryMapEntry->Type) {
+        case EfiRuntimeServicesCode:
+          // If at this point the attributes have not been set on an EfiRuntimeServicesCode
+          // region, the memory range must not contain a loaded image. It's possible these
+          // non-image EfiRuntimeServicesCode regions are part of the unused memory bucket.
+          // It could also be that this region was explicitly allocated outside of the PE
+          // loader but the UEFI spec requires that all EfiRuntimeServicesCode regions contain
+          // EFI modules. In either case, set the attributes to RO and XP.
+          MemoryMapEntry->Attribute |= (EFI_MEMORY_RO | EFI_MEMORY_XP);
+          break;
+        case EfiRuntimeServicesData:
+          MemoryMapEntry->Attribute |= EFI_MEMORY_XP;
+          break;
+        default:
+          break;
+      }
     }
 
     MemoryMapEntry = NEXT_MEMORY_DESCRIPTOR (MemoryMapEntry, DescriptorSize);
@@ -583,11 +597,6 @@ InsertImageRecord (
 
   DEBUG ((DEBUG_VERBOSE, "InsertImageRecord - 0x%x\n", RuntimeImage));
 
-  if (mMemoryAttributesTableEndOfDxe) {
-    DEBUG ((DEBUG_INFO, "Do not insert runtime image record after EndOfDxe\n"));
-    return;
-  }
-
   ImageRecord = AllocatePool (sizeof (*ImageRecord));
   if (ImageRecord == NULL) {
     return;
@@ -669,11 +678,6 @@ RemoveImageRecord (
 
   DEBUG ((DEBUG_VERBOSE, "RemoveImageRecord - 0x%x\n", RuntimeImage));
   DEBUG ((DEBUG_VERBOSE, "RemoveImageRecord - 0x%016lx - 0x%016lx\n", (EFI_PHYSICAL_ADDRESS)(UINTN)RuntimeImage->ImageBase, RuntimeImage->ImageSize));
-
-  if (mMemoryAttributesTableEndOfDxe) {
-    DEBUG ((DEBUG_INFO, "Do not remove runtime image record after EndOfDxe\n"));
-    return;
-  }
 
   ImageRecord = FindImageRecord ((EFI_PHYSICAL_ADDRESS)(UINTN)RuntimeImage->ImageBase, RuntimeImage->ImageSize, &mImagePropertiesPrivateData.ImageRecordList);
   if (ImageRecord == NULL) {

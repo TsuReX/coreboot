@@ -169,7 +169,7 @@ PrintPciRootBridgeInfoGuidHob (
 
   Index          = 0;
   PciRootBridges = (UNIVERSAL_PAYLOAD_PCI_ROOT_BRIDGES *)GET_GUID_HOB_DATA (HobRaw);
-  Length         = sizeof (UNIVERSAL_PAYLOAD_PCI_ROOT_BRIDGES) + PciRootBridges->Count * sizeof (UNIVERSAL_PAYLOAD_PCI_ROOT_BRIDGE);
+  Length         = sizeof (UNIVERSAL_PAYLOAD_PCI_ROOT_BRIDGES) + (PciRootBridges->Count * sizeof (UNIVERSAL_PAYLOAD_PCI_ROOT_BRIDGE));
   ASSERT (HobLength >= Length);
   DEBUG ((DEBUG_INFO, "   Revision         = 0x%x\n", PciRootBridges->Header.Revision));
   DEBUG ((DEBUG_INFO, "   Length           = 0x%x\n", PciRootBridges->Header.Length));
@@ -271,7 +271,9 @@ PrintMemoryTypeInfoGuidHob (
 //
 GUID_HOB_PRINT_HANDLE  GuidHobPrintHandleTable[] = {
   { &gUniversalPayloadAcpiTableGuid,         PrintAcpiGuidHob,              "gUniversalPayloadAcpiTableGuid(ACPI table Guid)"             },
+ #if FixedPcdGetBool (PcdUseUniversalPayloadSerialPort) == 1
   { &gUniversalPayloadSerialPortInfoGuid,    PrintSerialGuidHob,            "gUniversalPayloadSerialPortInfoGuid(Serial Port Info)"       },
+ #endif
   { &gUniversalPayloadSmbios3TableGuid,      PrintSmbios3GuidHob,           "gUniversalPayloadSmbios3TableGuid(SmBios Guid)"              },
   { &gUniversalPayloadSmbiosTableGuid,       PrintSmbiosTablGuidHob,        "gUniversalPayloadSmbiosTableGuid(SmBios Guid)"               },
   { &gUefiAcpiBoardInfoGuid,                 PrintAcpiBoardInfoGuidHob,     "gUefiAcpiBoardInfoGuid(Acpi Guid)"                           },

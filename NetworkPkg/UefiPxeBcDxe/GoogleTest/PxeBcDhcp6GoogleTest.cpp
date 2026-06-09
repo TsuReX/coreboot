@@ -37,6 +37,7 @@ typedef struct {
 ///////////////////////////////////////////////////////////////////////////////
 
 EFI_STATUS
+EFIAPI
 MockUdpWrite (
   IN EFI_PXE_BASE_CODE_PROTOCOL      *This,
   IN UINT16                          OpFlags,
@@ -55,6 +56,7 @@ MockUdpWrite (
 }
 
 EFI_STATUS
+EFIAPI
 MockUdpRead (
   IN EFI_PXE_BASE_CODE_PROTOCOL      *This,
   IN UINT16                          OpFlags,
@@ -72,6 +74,7 @@ MockUdpRead (
 }
 
 EFI_STATUS
+EFIAPI
 MockConfigure (
   IN EFI_UDP6_PROTOCOL     *This,
   IN EFI_UDP6_CONFIG_DATA  *UdpConfigData OPTIONAL
@@ -290,14 +293,8 @@ TEST_F (PxeBcCacheDnsServerAddressesTest, AttemptUnderflowTest) {
 // Test Description
 // Test that we can handle recursive dns (multiple dns entries)
 TEST_F (PxeBcCacheDnsServerAddressesTest, MultipleDnsEntries) {
-  EFI_DHCP6_PACKET_OPTION   Option  = { 0 };
+  EFI_DHCP6_PACKET_OPTION   *Option = NULL;
   PXEBC_DHCP6_PACKET_CACHE  *Cache6 = NULL;
-
-  Private.SelectIndex                         = 1; // SelectIndex is 1-based
-  Cache6                                      = &Private.OfferBuffer[Private.SelectIndex - 1].Dhcp6;
-  Cache6->OptList[PXEBC_DHCP6_IDX_DNS_SERVER] = &Option;
-  // Setup the DHCPv6 offer packet
-  Cache6->OptList[PXEBC_DHCP6_IDX_DNS_SERVER]->OpCode = DHCP6_OPT_SERVER_ID;
 
   EFI_IPv6_ADDRESS  addresses[2] = {
     // 2001:db8:85a3::8a2e:370:7334
@@ -306,7 +303,18 @@ TEST_F (PxeBcCacheDnsServerAddressesTest, MultipleDnsEntries) {
     { 0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xd4, 0x78, 0x91, 0xc3, 0xec, 0xd7, 0x4f, 0xf9 }
   };
 
-  CopyMem (Cache6->OptList[PXEBC_DHCP6_IDX_DNS_SERVER]->Data, &addresses, sizeof (addresses));
+  Option = (EFI_DHCP6_PACKET_OPTION *)AllocatePool (sizeof (*Option) + sizeof (addresses));
+  if (Option == NULL) {
+    ASSERT_NE (Option, nullptr);
+  }
+
+  Private.SelectIndex                         = 1; // SelectIndex is 1-based
+  Cache6                                      = &Private.OfferBuffer[Private.SelectIndex - 1].Dhcp6;
+  Cache6->OptList[PXEBC_DHCP6_IDX_DNS_SERVER] = Option;
+  // Setup the DHCPv6 offer packet
+  Cache6->OptList[PXEBC_DHCP6_IDX_DNS_SERVER]->OpCode = DHCP6_OPT_SERVER_ID;
+
+  CopyMem (Cache6->OptList[PXEBC_DHCP6_IDX_DNS_SERVER]->Data, addresses, sizeof (addresses));
 
   Cache6->OptList[PXEBC_DHCP6_IDX_DNS_SERVER]->OpLen = NTOHS (sizeof (addresses));
 
@@ -326,6 +334,10 @@ TEST_F (PxeBcCacheDnsServerAddressesTest, MultipleDnsEntries) {
 
   if (Private.DnsServer) {
     FreePool (Private.DnsServer);
+  }
+
+  if (Option) {
+    FreePool (Option);
   }
 }
 

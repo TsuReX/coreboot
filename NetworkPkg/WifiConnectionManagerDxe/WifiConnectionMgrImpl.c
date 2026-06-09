@@ -267,7 +267,6 @@ WifiMgrStartScan (
 
   Nic->ScanState  = WifiMgrScanning;
   OldTpl          = gBS->RaiseTPL (TPL_CALLBACK);
-  Status          = EFI_SUCCESS;
   HiddenSSIdList  = NULL;
   HiddenSSIdCount = Nic->Private->HiddenNetworkCount;
   HiddenSSIdIndex = 0;
@@ -1177,6 +1176,7 @@ WifiMgrOnConnectFinished (
   }
 
   ConfigToken->Nic->ConnectState = WifiMgrConnectedToAp;
+  gBS->SetTimer (ConfigToken->Nic->TickTimer, TimerCancel, 0);
   WifiMgrUpdateConnectMessage (ConfigToken->Nic, TRUE, NULL);
 
 Exit:
@@ -1398,7 +1398,6 @@ WifiMgrDisconnectToNetwork (
   }
 
   OldTpl      = gBS->RaiseTPL (TPL_CALLBACK);
-  Status      = EFI_SUCCESS;
   ConfigToken = AllocateZeroPool (sizeof (WIFI_MGR_MAC_CONFIG_TOKEN));
   if (ConfigToken == NULL) {
     gBS->RestoreTPL (OldTpl);
@@ -1489,6 +1488,12 @@ WifiMgrOnTimerTick (
   }
 
   Nic = (WIFI_MGR_DEVICE_DATA *)Context;
+  if ((Nic->ConnectPendingNetwork == NULL) && !Nic->HasDisconnectPendingNetwork) {
+    DEBUG ((DEBUG_VERBOSE, "[WiFi Connection Manager] No profile for connection, no scan triggered!\n"));
+    gBS->SetTimer (Nic->TickTimer, TimerCancel, 0);
+    return;
+  }
+
   NET_CHECK_SIGNATURE (Nic, WIFI_MGR_DEVICE_DATA_SIGNATURE);
 
   Status = WifiMgrGetLinkState (Nic, &LinkState);
@@ -1506,8 +1511,11 @@ WifiMgrOnTimerTick (
   }
 
   Nic->ScanTickTime++;
-  if ((((Nic->ScanTickTime > WIFI_SCAN_FREQUENCY) && (Nic->ConnectState != WifiMgrConnectedToAp)) ||
-       Nic->OneTimeScanRequest) && (Nic->ScanState == WifiMgrScanFinished))
+  if ((((Nic->ScanTickTime > WIFI_SCAN_FREQUENCY) &&
+        ((Nic->ConnectState != WifiMgrConnectedToAp) &&
+         (Nic->ConnectState != WifiMgrConnectingToAp))) ||
+       Nic->OneTimeScanRequest) &&
+      (Nic->ScanState == WifiMgrScanFinished))
   {
     Nic->OneTimeScanRequest = FALSE;
     Nic->ScanTickTime       = 0;

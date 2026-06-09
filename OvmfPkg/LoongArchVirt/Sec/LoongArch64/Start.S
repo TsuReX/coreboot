@@ -19,12 +19,6 @@
 #include <Protocol/DebugSupport.h>
 
 #define BOOTCORE_ID  0
-//
-// For coding convenience, define the maximum valid
-// LoongArch exception.
-// Since UEFI V2.11, it will be present in DebugSupport.h.
-//
-#define MAX_LOONGARCH_EXCEPTION  64
 
 ASM_GLOBAL ASM_PFX(_ModuleEntryPoint)
 ASM_PFX(_ModuleEntryPoint):
@@ -105,7 +99,7 @@ ASM_PFX(EnableIPI):
 #     )
 #**/
 ASM_PFX(GetApicId):
-  csrrd $a0, LOONGARCH_CSR_CPUNUM
+  csrrd $a0, LOONGARCH_CSR_CPUID
   andi  $a0, $a0, 0x3ff
   jirl  $zero, $ra, 0
 # End of GetApicId

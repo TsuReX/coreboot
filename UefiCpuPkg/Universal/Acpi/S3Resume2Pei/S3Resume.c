@@ -871,7 +871,7 @@ S3ResumeExecuteBootScript (
     SignalToSmmByCommunication (&gEdkiiS3SmmInitDoneGuid);
   }
 
-  if ((FeaturePcdGet (PcdDxeIplSwitchToLongMode)) || (sizeof (UINTN) == sizeof (UINT64))) {
+  if (FeaturePcdGet (PcdDxeIplSwitchToLongMode)) {
     AsmWriteCr3 ((UINTN)AcpiS3Context->S3NvsPageTableAddress);
   }
 
@@ -1017,7 +1017,7 @@ S3RestoreConfig2 (
   BOOLEAN                        Build4GPageTableOnly;
   BOOLEAN                        InterruptStatus;
   IA32_CR0                       Cr0;
-  EDKII_PEI_MP_SERVICES2_PPI     *MpService2Ppi;
+  EFI_PEI_MP_SERVICES2_PPI       *MpService2Ppi;
   MTRR_SETTINGS                  MtrrTable;
 
   TempAcpiS3Context                 = 0;
@@ -1083,7 +1083,7 @@ S3RestoreConfig2 (
     CpuDeadLoop ();
   }
 
-  if ((FeaturePcdGet (PcdDxeIplSwitchToLongMode)) || (sizeof (UINTN) == sizeof (UINT64))) {
+  if (FeaturePcdGet (PcdDxeIplSwitchToLongMode)) {
     //
     // Need reconstruct page table here, since we do not trust ACPINvs.
     //
@@ -1115,7 +1115,7 @@ S3RestoreConfig2 (
     // Get MP Services2 Ppi to pass it to Smm S3.
     //
     Status = PeiServicesLocatePpi (
-               &gEdkiiPeiMpServices2PpiGuid,
+               &gEfiPeiMpServices2PpiGuid,
                0,
                NULL,
                (VOID **)&MpService2Ppi
@@ -1217,7 +1217,9 @@ S3RestoreConfig2 (
         AsmWriteCr0 (Cr0.UintN);
       }
 
-      AsmWriteCr3 ((UINTN)SmmS3ResumeState->SmmS3Cr3);
+      if (FeaturePcdGet (PcdDxeIplSwitchToLongMode)) {
+        AsmWriteCr3 ((UINTN)SmmS3ResumeState->SmmS3Cr3);
+      }
 
       //
       // Disable interrupt of Debug timer, since IDT table cannot work in long mode.

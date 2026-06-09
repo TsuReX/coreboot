@@ -182,12 +182,10 @@ MmIsSchedulable (
 
   if (DriverEntry->Depex == NULL) {
     //
-    // A NULL Depex means that the MM driver is not built correctly.
-    // All MM drivers must have a valid depex expression.
+    // If there is no DEPEX, assume the module can be executed
     //
-    DEBUG ((DEBUG_DISPATCH, "  RESULT = FALSE (Depex is empty)\n"));
-    ASSERT (FALSE);
-    return FALSE;
+    DEBUG ((DEBUG_DISPATCH, "  RESULT = TRUE (No DEPEX)\n"));
+    return TRUE;
   }
 
   //
@@ -222,6 +220,7 @@ MmIsSchedulable (
         //
         DEBUG ((DEBUG_DISPATCH, "  RESULT = FALSE (Unexpected BEFORE or AFTER opcode)\n"));
         ASSERT (FALSE);
+        return FALSE;
 
       case EFI_DEP_PUSH:
         //
@@ -231,13 +230,6 @@ MmIsSchedulable (
         CopyMem (&DriverGuid, Iterator + 1, sizeof (EFI_GUID));
 
         Status = MmLocateProtocol (&DriverGuid, NULL, &Interface);
-        if (EFI_ERROR (Status) && (mEfiSystemTable != NULL)) {
-          //
-          // For MM Driver, it may depend on uefi protocols
-          //
-          Status = mEfiSystemTable->BootServices->LocateProtocol (&DriverGuid, NULL, &Interface);
-        }
-
         if (EFI_ERROR (Status)) {
           DEBUG ((DEBUG_DISPATCH, "  PUSH GUID(%g) = FALSE\n", &DriverGuid));
           Status = PushBool (FALSE);

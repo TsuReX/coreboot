@@ -3,14 +3,15 @@
 
   (C) Copyright 2020 Hewlett Packard Enterprise Development LP<BR>
   (C) Copyright 2024 American Megatrends International LLC<BR>
+  Copyright (c) 2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#ifndef EDKII_REDFISH_CREDENTIAL_DXE_H_
-#define EDKII_REDFISH_CREDENTIAL_DXE_H_
+#pragma once
 
+#include <RedfishCommon.h>
 #include <Protocol/EdkIIRedfishCredential2.h>
 
 #include <Library/BaseLib.h>
@@ -28,10 +29,6 @@
 #define REDFISH_CREDENTIAL_DEBUG                DEBUG_VERBOSE
 #define REDFISH_MANAGER_ACCOUNT_COLLECTION_URI  L"AccountService/Accounts"
 #define REDFISH_URI_LENGTH                      128
-
-#ifndef IS_EMPTY_STRING
-#define IS_EMPTY_STRING(a)  ((a) == NULL || (a)[0] == '\0')
-#endif
 
 ///
 /// Definition of REDFISH_SERVICE_LIST
@@ -54,5 +51,3 @@ typedef struct {
   EDKII_REDFISH_CREDENTIAL2_PROTOCOL    RedfishCredential2Protocol;
   LIST_ENTRY                            RedfishServiceList;
 } REDFISH_CREDENTIAL_PRIVATE;
-
-#endif

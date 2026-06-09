@@ -38,6 +38,7 @@
 #include <IndustryStandard/QemuCpuHotplug.h>
 #include <Library/MemEncryptSevLib.h>
 #include <OvmfPlatforms.h>
+#include <Library/TdxHelperLib.h>
 
 #include "Platform.h"
 #include "PlatformId.h"
@@ -220,6 +221,10 @@ ReserveEmuVariableNvStore (
   EFI_PHYSICAL_ADDRESS  VariableStore;
   RETURN_STATUS         PcdStatus;
 
+  if (FeaturePcdGet (PcdQemuVarsRequire)) {
+    return;
+  }
+
   VariableStore = (EFI_PHYSICAL_ADDRESS)(UINTN)PlatformReserveEmuVariableNvStore ();
   PcdStatus     = PcdSet64S (PcdEmuVariableNvStoreReserved, VariableStore);
 
@@ -311,6 +316,14 @@ InitializePlatform (
   DEBUG ((DEBUG_INFO, "Platform PEIM Loaded\n"));
   PlatformInfoHob = BuildPlatformInfoHob ();
 
+  if (TdIsEnabled ()) {
+    TdxHelperBuildGuidHobForTdxMeasurement ();
+  }
+
+  if (RETURN_ERROR (QemuFwCfgInitCache (PlatformInfoHob))) {
+    DEBUG ((DEBUG_ERROR, "QemuFwCfgInitCache failed !\n"));
+  }
+
   PlatformInfoHob->SmmSmramRequire     = FeaturePcdGet (PcdSmmSmramRequire);
   PlatformInfoHob->SevEsIsEnabled      = MemEncryptSevEsIsEnabled ();
   PlatformInfoHob->PcdPciMmio64Size    = PcdGet64 (PcdPciMmio64Size);
@@ -318,7 +331,10 @@ InitializePlatform (
 
   PlatformDebugDumpCmos ();
 
-  if (QemuFwCfgS3Enabled ()) {
+  if (!TdIsEnabled () &&
+      !PlatformInfoHob->SevEsIsEnabled &&
+      QemuFwCfgS3Enabled ())
+  {
     DEBUG ((DEBUG_INFO, "S3 support was detected on QEMU\n"));
     PlatformInfoHob->S3Supported = TRUE;
     Status                       = PcdSetBoolS (PcdAcpiS3Enable, TRUE);
@@ -348,10 +364,6 @@ InitializePlatform (
   InitializeRamRegions (PlatformInfoHob);
 
   if (PlatformInfoHob->BootMode != BOOT_ON_S3_RESUME) {
-    if (!PlatformInfoHob->SmmSmramRequire) {
-      ReserveEmuVariableNvStore ();
-    }
-
     PeiFvInitialization (PlatformInfoHob);
     MemTypeInfoInitialization (PlatformInfoHob);
     MemMapInitialization (PlatformInfoHob);
@@ -371,6 +383,16 @@ InitializePlatform (
   InstallFeatureControlCallback (PlatformInfoHob);
   if (PlatformInfoHob->SmmSmramRequire) {
     RelocateSmBase ();
+  }
+
+  //
+  // Performed after CoCo (SEV/TDX) initialization to allow the memory
+  // used to be validated before being used.
+  //
+  if (PlatformInfoHob->BootMode != BOOT_ON_S3_RESUME) {
+    if (!PlatformInfoHob->SmmSmramRequire) {
+      ReserveEmuVariableNvStore ();
+    }
   }
 
   return EFI_SUCCESS;

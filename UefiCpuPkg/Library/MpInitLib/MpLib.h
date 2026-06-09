@@ -8,8 +8,7 @@
 
 **/
 
-#ifndef _MP_LIB_H_
-#define _MP_LIB_H_
+#pragma once
 
 #include <PiPei.h>
 
@@ -34,6 +33,7 @@
 #include <Library/PcdLib.h>
 #include <Library/MicrocodeLib.h>
 #include <Library/CpuPageTableLib.h>
+#include <Library/SafeIntLib.h>
 #include <ConfidentialComputingGuestAttr.h>
 
 #include <Register/Amd/SevSnpMsr.h>
@@ -212,18 +212,23 @@ typedef struct {
   UINTN              StackStart;
   UINTN              StackSize;
   UINTN              CFunction;
+  //
+  // NumApsExecuting and ApIndex are used atomically (in the
+  // assembly code). To avoid split-lock violations, keep them
+  // naturally aligned within a single cacheline.
+  //
+  UINTN              NumApsExecuting;
+  UINTN              ApIndex;
   IA32_DESCRIPTOR    GdtrProfile;
   IA32_DESCRIPTOR    IdtrProfile;
   UINTN              BufferStart;
   UINTN              ModeOffset;
-  UINTN              ApIndex;
   UINTN              CodeSegment;
   UINTN              DataSegment;
   UINTN              EnableExecuteDisable;
   UINTN              Cr3;
   UINTN              InitFlag;
   CPU_INFO_IN_HOB    *CpuInfo;
-  UINTN              NumApsExecuting;
   CPU_MP_DATA        *CpuMpData;
   UINTN              InitializeFloatingPointUnitsAddress;
   UINT32             ModeTransitionMemory;
@@ -238,6 +243,7 @@ typedef struct {
   BOOLEAN            SevSnpIsEnabled;
   UINTN              GhcbBase;
   BOOLEAN            ExtTopoAvail;
+  BOOLEAN            SevSnpKnownInitApicId;
 } MP_CPU_EXCHANGE_INFO;
 
 #pragma pack()
@@ -250,11 +256,23 @@ typedef struct {
 // in assembly code.
 //
 struct _CPU_MP_DATA {
-  UINT64                           CpuInfoInHob;
-  UINT32                           CpuCount;
-  UINT32                           BspNumber;
-  SPIN_LOCK                        MpLock;
-  UINTN                            Buffer;
+  UINT64       CpuInfoInHob;
+  UINT32       CpuCount;
+  UINT32       BspNumber;
+  SPIN_LOCK    MpLock;
+  UINTN        Buffer;
+
+  //
+  // InitialBspApicMode stores the initial BSP APIC mode.
+  // It is used to synchronize the BSP APIC mode with APs
+  // in the first time APs wake up.
+  // Its value doesn't reflect the current APIC mode since there are
+  // two cases the APIC mode is changed:
+  // 1. MpLib explicitly switches to X2 APIC mode because number of threads is greater than 255,
+  //    or there are any logical processors reporting an initial APIC ID of 255 or greater.
+  // 2. Some code switches to X2 APIC mode in all threads through MP services PPI/Protocol.
+  //
+  UINTN                            InitialBspApicMode;
   UINTN                            CpuApStackSize;
   MP_ASSEMBLY_ADDRESS_MAP          AddressMap;
   UINTN                            WakeupBuffer;
@@ -325,7 +343,7 @@ typedef struct {
 
 #define AP_SAFE_STACK_SIZE   128
 #define AP_RESET_STACK_SIZE  AP_SAFE_STACK_SIZE
-STATIC_ASSERT ((AP_SAFE_STACK_SIZE & (CPU_STACK_ALIGNMENT - 1)) == 0, "AP_SAFE_STACK_SIZE is not aligned with CPU_STACK_ALIGNMENT");
+STATIC_ASSERT (IS_ALIGNED (AP_SAFE_STACK_SIZE, CPU_STACK_ALIGNMENT), "AP_SAFE_STACK_SIZE is not aligned with CPU_STACK_ALIGNMENT");
 
 #pragma pack(1)
 
@@ -514,7 +532,7 @@ GetNextMpHandOffHob (
   @retval 0       Cannot find free memory below 4GB.
 **/
 UINTN
-AllocateCodeBuffer (
+AllocateCodePage (
   IN UINTN  BufferSize
   );
 
@@ -819,7 +837,7 @@ GetProcessorNumber (
   );
 
 /**
-  This funtion will try to invoke platform specific microcode shadow logic to
+  This function will try to invoke platform specific microcode shadow logic to
   relocate microcode update patches into memory.
 
   @param[in, out] CpuMpData  The pointer to CPU MP Data structure.
@@ -882,7 +900,7 @@ ConfidentialComputingGuestHas (
   @param[in]   ExchangeInfo  The pointer to CPU Exchange Data structure
 **/
 VOID
-FillExchangeInfoDataSevEs (
+FillExchangeInfoDataSevSnp (
   IN volatile MP_CPU_EXCHANGE_INFO  *ExchangeInfo
   );
 
@@ -972,16 +990,23 @@ AllocateApLoopCodeBuffer (
 /**
   Remove Nx protection for the range specific by BaseAddress and Length.
 
-  The PEI implementation uses CpuPageTableLib to change the attribute.
-  The DXE implementation uses gDS to change the attribute.
-
   @param[in] BaseAddress  BaseAddress of the range.
   @param[in] Length       Length of the range.
 **/
 VOID
-RemoveNxprotection (
+RemoveNxProtection (
   IN EFI_PHYSICAL_ADDRESS  BaseAddress,
   IN UINTN                 Length
   );
 
-#endif
+/**
+Add ReadOnly protection to the range specified by BaseAddress and Length.
+
+@param[in] BaseAddress  BaseAddress of the range.
+@param[in] Length       Length of the range.
+**/
+VOID
+ApplyRoProtection (
+  IN EFI_PHYSICAL_ADDRESS  BaseAddress,
+  IN UINTN                 Length
+  );

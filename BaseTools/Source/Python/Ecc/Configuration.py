@@ -71,7 +71,6 @@ _ConfigFileToInternalTranslation = {
     "HeaderCheckFunction":"HeaderCheckFunction",
     "IncludeFileCheckAll":"IncludeFileCheckAll",
     "IncludeFileCheckData":"IncludeFileCheckData",
-    "IncludeFileCheckIfndefStatement":"IncludeFileCheckIfndefStatement",
     "IncludeFileCheckSameName":"IncludeFileCheckSameName",
     "MetaDataFileCheckAll":"MetaDataFileCheckAll",
     "MetaDataFileCheckBinaryInfInFdf":"MetaDataFileCheckBinaryInfInFdf",
@@ -97,7 +96,6 @@ _ConfigFileToInternalTranslation = {
     "NamingConventionCheckAll":"NamingConventionCheckAll",
     "NamingConventionCheckDefineStatement":"NamingConventionCheckDefineStatement",
     "NamingConventionCheckFunctionName":"NamingConventionCheckFunctionName",
-    "NamingConventionCheckIfndefStatement":"NamingConventionCheckIfndefStatement",
     "NamingConventionCheckPathName":"NamingConventionCheckPathName",
     "NamingConventionCheckSingleCharacterVariable":"NamingConventionCheckSingleCharacterVariable",
     "NamingConventionCheckTypedefStatement":"NamingConventionCheckTypedefStatement",
@@ -242,10 +240,6 @@ class Configuration(object):
 
         #Check whether having include files with same name
         self.IncludeFileCheckSameName = 1
-        # Check whether all include file contents is guarded by a #ifndef statement.
-        # the #ifndef must be the first line of code following the file header comment
-        # the #endif must appear on the last line in the file
-        self.IncludeFileCheckIfndefStatement = 1
         # Check whether include files contain only public or only private data
         # Check whether include files NOT contain code or define data variables
         self.IncludeFileCheckData = 1
@@ -275,8 +269,6 @@ class Configuration(object):
         self.NamingConventionCheckDefineStatement = 1
         # Check whether only capital letters are used for typedef declarations
         self.NamingConventionCheckTypedefStatement = 1
-        # Check whether the #ifndef at the start of an include file uses both prefix and postfix underscore characters, '_'.
-        self.NamingConventionCheckIfndefStatement = 1
         # Rule for path name, variable name and function name
         # 1. First character should be upper case
         # 2. Existing lower case in a word
@@ -432,7 +424,7 @@ class Configuration(object):
 # test that our dict and out class still match in contents.
 #
 if __name__ == '__main__':
-    myconfig = Configuration("BaseTools\Source\Python\Ecc\config.ini")
+    myconfig = Configuration(r"BaseTools\Source\Python\Ecc\config.ini")
     for each in myconfig.__dict__:
         if each == "Filename":
             continue

@@ -7,8 +7,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#ifndef _DXE_MAIN_H_
-#define _DXE_MAIN_H_
+#pragma once
 
 #include <PiDxe.h>
 
@@ -45,6 +44,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Protocol/HiiPackageList.h>
 #include <Protocol/SmmBase2.h>
 #include <Protocol/PeCoffImageEmulator.h>
+#include <Protocol/MemoryAttribute.h>
 #include <Guid/MemoryTypeInformation.h>
 #include <Guid/FirmwareFileSystem2.h>
 #include <Guid/FirmwareFileSystem3.h>
@@ -84,6 +84,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/DxeServicesLib.h>
 #include <Library/DebugAgentLib.h>
 #include <Library/CpuExceptionHandlerLib.h>
+#include <Library/OrderedCollectionLib.h>
 
 //
 // attributes for reserved memory before it is promoted to system memory
@@ -249,6 +250,7 @@ extern EFI_SECURITY_ARCH_PROTOCOL        *gSecurity;
 extern EFI_SECURITY2_ARCH_PROTOCOL       *gSecurity2;
 extern EFI_BDS_ARCH_PROTOCOL             *gBds;
 extern EFI_SMM_BASE2_PROTOCOL            *gSmmBase2;
+extern EFI_MEMORY_ATTRIBUTE_PROTOCOL     *gMemoryAttributeProtocol;
 
 extern EFI_TPL  gEfiCurrentTpl;
 
@@ -2790,4 +2792,32 @@ MergeMemoryMap (
   IN UINTN                      DescriptorSize
   );
 
-#endif
+/**
+  Initializes "handle" support.
+
+  @return Status code.
+
++**/
+EFI_STATUS
+CoreInitializeHandleServices (
+  VOID
+  );
+
+/**
+  Calculate total memory bin size needed.
+
+  @param BinTop                The top address of the memory bins. This is an optional parameter.
+                               When NULL, the returned size meets the alignment requirements as long as
+                               the base address selected also meets the alignment requirements. When
+                               non-NULL, then the returned BinTop value and the returned size both meet
+                               the alignment requirements. When non-NULL, this will be updated on
+                               output to the new top address of the memory bins that must be used to
+                               satisfy alignment requirements.
+
+  @return The total memory bin size needed.
+
+**/
+UINT64
+CalculateTotalMemoryBinSizeNeeded (
+  IN OUT OPTIONAL EFI_PHYSICAL_ADDRESS  *BinTop
+  );

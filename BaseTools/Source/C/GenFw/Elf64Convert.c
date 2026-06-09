@@ -11,7 +11,9 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
 #ifndef __GNUC__
+#define RUNTIME_FUNCTION  _WINNT_DUP_RUNTIME_FUNCTION
 #include <windows.h>
+#undef RUNTIME_FUNCTION
 #include <io.h>
 #endif
 #include <assert.h>
@@ -388,7 +390,8 @@ FindPrmHandler (
   PrmHandler = (PRM_HANDLER_EXPORT_DESCRIPTOR_STRUCT *)(PrmExport + 1);
 
   for (HandlerNum = 0; HandlerNum < PrmExport->NumberPrmHandlers; HandlerNum++) {
-    strcpy(mExportSymName[mExportSymNum], PrmHandler->PrmHandlerName);
+    snprintf(mExportSymName[mExportSymNum], PRM_HANDLER_NAME_MAXIMUM_LENGTH, "%s", PrmHandler->PrmHandlerName);
+
     mExportSymNum ++;
     PrmHandler += 1;
 
@@ -800,6 +803,11 @@ ParseNoteSection (
       Prop2 = GNU_PROPERTY_X86_FEATURE_1_IBT;
       break;
 
+    case EM_RISCV64:
+      Prop0 = GNU_PROPERTY_RISCV64_FEATURE_1_AND;
+      Prop2 = GNU_PROPERTY_RISCV64_FEATURE_1_FCFI;
+      break;
+
     default:
       return;
     }
@@ -1050,7 +1058,8 @@ ScanSections64 (
           //
           FindPrmHandler(Sym->st_value);
 
-          strcpy(mExportSymName[mExportSymNum], (CHAR8*)SymName);
+          snprintf(mExportSymName[mExportSymNum], PRM_HANDLER_NAME_MAXIMUM_LENGTH, "%s", (CHAR8*)SymName);
+
           mExportRVA[mExportSymNum] = (UINT32)(Sym->st_value);
           mExportSize += 2 * EFI_IMAGE_EXPORT_ADDR_SIZE + EFI_IMAGE_EXPORT_ORDINAL_SIZE + strlen((CHAR8 *)SymName) + 1;
           mExportSymNum ++;
@@ -1061,20 +1070,22 @@ ScanSections64 (
       //
       // Second Get PrmHandler
       //
-      for (SymIndex = 0; SymIndex < SymNum; SymIndex++) {
-        UINT32   ExpIndex;
-        Sym = (Elf_Sym *)(Symtab + SymIndex * shdr->sh_entsize);
-        SymName = GetSymName(Sym);
-        if (SymName == NULL) {
-            continue;
-        }
-
-        for (ExpIndex = 0; ExpIndex < (mExportSymNum -1); ExpIndex++) {
-          if (strcmp((CHAR8*)SymName, mExportSymName[ExpIndex]) != 0) {
-            continue;
+      if (mExportSymNum > 0) {
+        for (SymIndex = 0; SymIndex < SymNum; SymIndex++) {
+          UINT32   ExpIndex;
+          Sym = (Elf_Sym *)(Symtab + SymIndex * shdr->sh_entsize);
+          SymName = GetSymName(Sym);
+          if (SymName == NULL) {
+              continue;
           }
-          mExportRVA[ExpIndex] = (UINT32)(Sym->st_value);
-          mExportSize += 2 * EFI_IMAGE_EXPORT_ADDR_SIZE + EFI_IMAGE_EXPORT_ORDINAL_SIZE + strlen((CHAR8 *)SymName) + 1;
+
+          for (ExpIndex = 0; ExpIndex < (mExportSymNum -1); ExpIndex++) {
+            if (strcmp((CHAR8*)SymName, mExportSymName[ExpIndex]) != 0) {
+              continue;
+            }
+            mExportRVA[ExpIndex] = (UINT32)(Sym->st_value);
+            mExportSize += 2 * EFI_IMAGE_EXPORT_ADDR_SIZE + EFI_IMAGE_EXPORT_ORDINAL_SIZE + strlen((CHAR8 *)SymName) + 1;
+          }
         }
       }
 
@@ -1397,6 +1408,16 @@ WriteSections64 (
           }
 
           //
+          // We can ignore R_*_NONE relocations (which always have numeric
+          // value 0x0).  They are used to indicate that the symbol is not
+          // defined in the current module, but in a shared library that may be
+          // used when building modules for inclusion in host-based unit tests.
+          //
+          if (ELF_R_TYPE(Rel->r_info) == 0x0) {
+            continue;
+          }
+
+          //
           // Skip error on EM_RISCV64 and EM_LOONGARCH because no symbol name is built
           // from RISC-V and LoongArch toolchain.
           //
@@ -1482,9 +1503,18 @@ WriteSections64 (
               - (SecOffset - SecShdr->sh_addr));
             VerboseMsg ("Relocation:  0x%08X", *(UINT32 *)Targ);
             break;
+          case R_X86_64_REX_GOTPCRELX:
+            //
+            // This is a relaxable GOTPCREL relocation, and the linker may have
+            // applied this relaxation without updating the relocation type.
+            // In the position independent code model, only transformations
+            // from MOV to LEA are possible for REX-prefixed instructions.
+            //
+            if (Targ[-2] == 0x8d) { // LEA
+              break;
+            }
           case R_X86_64_GOTPCREL:
           case R_X86_64_GOTPCRELX:
-          case R_X86_64_REX_GOTPCRELX:
             VerboseMsg ("R_X86_64_GOTPCREL family");
             VerboseMsg ("Offset: 0x%08X, Addend: 0x%08X",
               (UINT32)(SecOffset + (Rel->r_offset - SecShdr->sh_addr)),
@@ -1704,8 +1734,11 @@ WriteSections64 (
           WriteSectionRiscV64 (Rel, Targ, SymShdr, Sym);
         } else if (mEhdr->e_machine == EM_LOONGARCH) {
           switch (ELF_R_TYPE(Rel->r_info)) {
-            INT64 Offset;
-            INT32 Lo, Hi;
+            INT64     Offset;
+            INT64     BackIdx;
+            INT32     LoImm, HiImm;
+            UINT8     *PreTarg;
+            Elf_Rela  *PreRel;
 
           case R_LARCH_SOP_PUSH_ABSOLUTE:
             //
@@ -1772,10 +1805,8 @@ WriteSections64 (
           case R_LARCH_ABS_LO12:
           case R_LARCH_ABS64_LO20:
           case R_LARCH_ABS64_HI12:
-          case R_LARCH_PCALA_LO12:
           case R_LARCH_PCALA64_LO20:
           case R_LARCH_PCALA64_HI12:
-          case R_LARCH_GOT_PC_LO12:
           case R_LARCH_GOT64_PC_LO20:
           case R_LARCH_GOT64_PC_HI12:
           case R_LARCH_GOT64_HI20:
@@ -1814,73 +1845,97 @@ WriteSections64 (
             //
             break;
 
+            //
+            // The following four types are used the PC related method to fixup.
+            //
+          case R_LARCH_PCALA_HI20:
           case R_LARCH_GOT_PC_HI20:
-            Offset = Sym->st_value - (UINTN)(Targ - mCoffFile);
-            if (Offset < 0) {
-              Offset = (UINTN)(Targ - mCoffFile) - Sym->st_value;
-              Hi = Offset & ~0xfff;
-              Lo = (INT32)((Offset & 0xfff) << 20) >> 20;
-              if ((Lo < 0) && (Lo > -2048)) {
-                Hi += 0x1000;
-                Lo = ~(0x1000 - Lo) + 1;
-              }
-              Hi = ~Hi + 1;
-              Lo = ~Lo + 1;
+            Offset = 0;
+            if (ELF_R_TYPE(Rel->r_info) == R_LARCH_PCALA_HI20) {
+              //
+              // Recover the offset of the ELF PCALAU12I symbol relative to PC.
+              //
+              Offset = (INT32)((Sym->st_value + Rel->r_addend) - (Rel->r_offset & ~0xFFF));
+              //
+              // Calculate the offset of PE PCADDU12I relative to PC.
+              //
+              Offset -= (UINTN)(Targ - mCoffFile) & 0xFFF;
+            } else if (ELF_R_TYPE(Rel->r_info) == R_LARCH_GOT_PC_HI20) {
+              //
+              // Calculate the offset of PE PCADDU12I relative to PC using the ELF symbol value.
+              //
+              Offset = Sym->st_value - (UINTN)(Targ - mCoffFile);
             } else {
-              Hi = Offset & ~0xfff;
-              Lo = (INT32)((Offset & 0xfff) << 20) >> 20;
-              if (Lo < 0) {
-                Hi += 0x1000;
-                Lo = ~(0x1000 - Lo) + 1;
-              }
+              Error (NULL, 0, 3000, "Invalid", "LoongArch PC related: wrong relocation type.");
+              break;
             }
-            // Re-encode the offset as PCADDU12I + ADDI.D(Convert LD.D) instruction
-            *(UINT32 *)Targ &= 0x1f;
-            *(UINT32 *)Targ |= 0x1c000000;
-            *(UINT32 *)Targ |= (((Hi >> 12) & 0xfffff) << 5);
-            *(UINT32 *)(Targ + 4) &= 0x3ff;
-            *(UINT32 *)(Targ + 4) |= 0x2c00000 | ((Lo & 0xfff) << 10);
+
+            //
+            // PCALA or GOT offset is relative to the previous page boundary, whereas PCADD
+            // offset is relative to the instruction itself.
+            // So fix up the offset so it points to the page containing the symbol.
+            //
+            HiImm = (UINT32)((Offset + 0x800) >> 12) & 0xFFFFF;
+
+            //
+            // Convert the first instruction from PCALAU12I to PCADDU12I and re-encode the offset into them.
+            //
+            *(UINT32 *)Targ &= 0x1F;
+            *(UINT32 *)Targ |= 0x1C000000;
+            *(UINT32 *)Targ |= HiImm << 5;
             break;
 
-          //
-          // Attempt to convert instruction.
-          //
-          case R_LARCH_PCALA_HI20:
-            // Decode the PCALAU12I instruction and the instruction that following it.
-            Offset = ((INT32)((*(UINT32 *)Targ & 0x1ffffe0) << 7));
-            Offset += ((INT32)((*(UINT32 *)(Targ + 4) & 0x3ffc00) << 10) >> 20);
+          case R_LARCH_PCALA_LO12:
+          case R_LARCH_GOT_PC_LO12:
+            PreTarg = NULL;
+            PreRel  = NULL;
+
             //
-            // PCALA offset is relative to the previous page boundary,
-            // whereas PCADD offset is relative to the instruction itself.
-            // So fix up the offset so it points to the page containing
-            // the symbol.
+            // Because the HI always at front of LO, so backtracking the corresponding HI.
             //
-            Offset -= (UINTN)(Targ - mCoffFile) & 0xfff;
-            if (Offset < 0) {
-              Offset = -Offset;
-              Hi = Offset & ~0xfff;
-              Lo = (INT32)((Offset & 0xfff) << 20) >> 20;
-              if ((Lo < 0) && (Lo > -2048)) {
-                Hi += 0x1000;
-                Lo = ~(0x1000 - Lo) + 1;
-              }
-              Hi = ~Hi + 1;
-              Lo = ~Lo + 1;
-            } else {
-              Hi = Offset & ~0xfff;
-              Lo = (INT32)((Offset & 0xfff) << 20) >> 20;
-              if (Lo < 0) {
-                Hi += 0x1000;
-                Lo = ~(0x1000 - Lo) + 1;
+            for (BackIdx = (INT32)(RelIdx - RelShdr->sh_entsize); BackIdx >= 0; BackIdx -= (INT32)RelShdr->sh_entsize) {
+              PreRel = (Elf_Rela *)((UINT8 *)mEhdr + RelShdr->sh_offset + BackIdx);
+              if (ELF_R_TYPE(PreRel->r_info) == R_LARCH_PCALA_HI20 || ELF_R_TYPE(PreRel->r_info) == R_LARCH_GOT_PC_HI20) {
+                if (ELF_R_SYM(PreRel->r_info) != ELF_R_SYM(Rel->r_info)) {
+                  continue;
+                }
+                if (PreRel->r_addend == Rel->r_addend) {
+                  PreTarg = mCoffFile + SecOffset + (PreRel->r_offset - SecShdr->sh_addr);
+                  break;
+                }
               }
             }
-            // Convert the first instruction from PCALAU12I to PCADDU12I and re-encode the offset into them.
-            *(UINT32 *)Targ &= 0x1f;
-            *(UINT32 *)Targ |= 0x1c000000;
-            *(UINT32 *)Targ |= (((Hi >> 12) & 0xfffff) << 5);
-            *(UINT32 *)(Targ + 4) &= 0xffc003ff;
-            *(UINT32 *)(Targ + 4) |= (Lo & 0xfff) << 10;
+
+            if (BackIdx < 0) {
+              Error (NULL, 0, 3000, "Invalid", "LoongArch PC related: LO has no corresponding HI.");
+              break;
+            }
+
+            //
+            // Calculate the corresponding HI relative to PC using the ELF symbol value and fix the LO offset.
+            //
+            if (ELF_R_TYPE(Rel->r_info) == R_LARCH_PCALA_LO12 && ELF_R_TYPE(PreRel->r_info) == R_LARCH_PCALA_HI20) {
+              Offset = (INT32)((Sym->st_value + PreRel->r_addend) - (PreRel->r_offset & ~0xFFF));
+              Offset -= (UINTN)(PreTarg - mCoffFile) & 0xFFF;
+              LoImm = (UINT32)(Offset & 0xFFF);
+              //
+              // Only fill the LO offset in corresponding instructions.
+              //
+              *(UINT32 *)Targ &= 0xFFC003FF;
+              *(UINT32 *)Targ |= LoImm << 10;
+            } else if (ELF_R_TYPE(Rel->r_info) == R_LARCH_GOT_PC_LO12 && ELF_R_TYPE(PreRel->r_info) == R_LARCH_GOT_PC_HI20) {
+              Offset = Sym->st_value - (UINTN)(PreTarg - mCoffFile);
+              LoImm = (UINT32)(Offset & 0xFFF);
+              //
+              // Convert this instruction as ADDI.D and fill the LO offset into it.
+              //
+              *(UINT32 *)Targ &= 0x3FF;
+              *(UINT32 *)Targ |= (0x2C00000 | LoImm << 10);
+            } else {
+              Error (NULL, 0, 3000, "Invalid", "LoongArch PC related: relocation not matched.");
+            }
             break;
+
           default:
             Error (NULL, 0, 3000, "Invalid", "WriteSections64(): %s unsupported ELF EM_LOONGARCH relocation 0x%x.", mInImageName, (unsigned) ELF64_R_TYPE(Rel->r_info));
           }
@@ -1968,6 +2023,7 @@ WriteRelocations64 (
           } else if (mEhdr->e_machine == EM_AARCH64) {
 
             switch (ELF_R_TYPE(Rel->r_info)) {
+            case R_AARCH64_NONE:
             case R_AARCH64_ADR_PREL_LO21:
             case R_AARCH64_CONDBR19:
             case R_AARCH64_LD_PREL_LO19:
@@ -2375,6 +2431,10 @@ WriteExport64 (
   UINT16                              Index;
   UINT8                               *Tdata = NULL;
 
+  if (mExportSymNum == 0) {
+    Error (NULL, 0, 3000, "Invalid", "--prm option set but no export symbols were found in %s", mInImageName);
+    exit(EXIT_FAILURE);
+  }
   ExportDir = (EFI_IMAGE_EXPORT_DIRECTORY*)(mCoffFile + mExportOffset);
   ExportDir->Characteristics = 0;
   ExportDir->TimeDateStamp = 0;

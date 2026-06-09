@@ -7,8 +7,7 @@
 
 **/
 
-#ifndef RISCV_ENCODING_H_
-#define RISCV_ENCODING_H_
+#pragma once
 
 #define MSTATUS_SIE         0x00000002UL
 #define MSTATUS_MIE         0x00000008UL
@@ -20,6 +19,7 @@
 #define MSTATUS_SPP         (1UL << MSTATUS_SPP_SHIFT)
 #define MSTATUS_MPP_SHIFT   11
 #define MSTATUS_MPP         (3UL << MSTATUS_MPP_SHIFT)
+#define MSTATUS_FS          0x00006000UL
 
 #define SSTATUS_SIE         MSTATUS_SIE
 #define SSTATUS_SPIE_SHIFT  MSTATUS_SPIE_SHIFT
@@ -76,6 +76,9 @@
 #define CSR_CYCLE  0xc00
 #define CSR_TIME   0xc01
 
+/* Floating-Point */
+#define CSR_FCSR  0x003
+
 /* Supervisor Trap Setup */
 #define CSR_SSTATUS  0x100
 #define CSR_SEDELEG  0x102
@@ -129,5 +132,3 @@
 #define SEED_OPST_ES16     0x80000000
 #define SEED_OPST_DEAD     0xc0000000
 #define SEED_ENTROPY_MASK  0xffff
-
-#endif

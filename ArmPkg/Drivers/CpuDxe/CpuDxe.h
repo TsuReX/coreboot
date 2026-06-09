@@ -2,13 +2,13 @@
 
   Copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
   Copyright (c) 2011 - 2013, ARM Ltd. All rights reserved.<BR>
+  Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. All rights reserved.<BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
-#ifndef CPU_DXE_H_
-#define CPU_DXE_H_
+#pragma once
 
 #include <Uefi.h>
 
@@ -23,7 +23,7 @@
 #include <Library/PeCoffGetEntryPointLib.h>
 #include <Library/UefiLib.h>
 #include <Library/CpuLib.h>
-#include <Library/DefaultExceptionHandlerLib.h>
+#include <Library/CpuExceptionHandlerLib.h>
 #include <Library/DebugLib.h>
 
 #include <Guid/DebugImageInfoTable.h>
@@ -99,7 +99,7 @@ CpuSetMemoryAttributes (
 
 EFI_STATUS
 InitializeExceptions (
-  IN EFI_CPU_ARCH_PROTOCOL  *Cpu
+  VOID
   );
 
 EFI_STATUS
@@ -142,5 +142,3 @@ UINT64
 RegionAttributeToGcdAttribute (
   IN UINTN  PageAttributes
   );
-
-#endif // CPU_DXE_H_

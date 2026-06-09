@@ -151,7 +151,7 @@ AssignOpRegion (
       Tcg2AcpiCommunicateBufferHob = GET_GUID_HOB_DATA (GuidHob);
       MemoryAddress                = Tcg2AcpiCommunicateBufferHob->Tcg2AcpiCommunicateBuffer;
       ASSERT (MemoryAddress != 0);
-      ASSERT (EFI_PAGES_TO_SIZE (Tcg2AcpiCommunicateBufferHob->Pages) >= Size);
+      ASSERT (EFI_PAGES_TO_SIZE ((UINTN)Tcg2AcpiCommunicateBufferHob->Pages) >= Size);
 
       ZeroMem ((VOID *)(UINTN)MemoryAddress, Size);
       OpRegion->RegionOffset = (UINT32)(UINTN)MemoryAddress;
@@ -725,7 +725,7 @@ PublishAcpiTable (
     PossibleIrqNumBuf     = (UINT32 *)PcdGetPtr (PcdTpm2PossibleIrqNumBuf);
     PossibleIrqNumBufSize = (UINT32)PcdGetSize (PcdTpm2PossibleIrqNumBuf);
 
-    if ((PossibleIrqNumBufSize <= MAX_PRS_INT_BUF_SIZE) && ((PossibleIrqNumBufSize % sizeof (UINT32)) == 0)) {
+    if ((PossibleIrqNumBufSize <= MAX_PRS_INT_BUF_SIZE) && IS_ALIGNED (PossibleIrqNumBufSize, sizeof (UINT32))) {
       Status = UpdatePossibleResource (Table, PossibleIrqNumBuf, PossibleIrqNumBufSize, &IsShortFormPkgLength);
       DEBUG ((
         DEBUG_INFO,

@@ -3,6 +3,7 @@
   NVM Express specification.
 
   Copyright (c) 2013 - 2017, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) Microsoft Corporation.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -182,6 +183,26 @@ EnumerateNvmeDevNamespace (
     InitializeListHead (&Device->AsyncQueue);
 
     //
+    // Create Media Sanitize Protocol instance
+    //
+    Device->MediaSanitize.Revision    = MEDIA_SANITIZE_PROTOCOL_REVISION;
+    Device->MediaSanitize.Media       = &Device->Media;
+    Device->MediaSanitize.MediaClear  = NvmExpressMediaClear;
+    Device->MediaSanitize.MediaPurge  = NvmExpressMediaPurge;
+    Device->MediaSanitize.MediaFormat = NvmExpressMediaFormat;
+
+    ASSERT (
+      sizeof (Device->MediaSanitize.SanitizeCapabilities) ==
+      sizeof (Device->Controller->ControllerData->Sanicap)
+      );
+
+    CopyMem (
+      &(Device->MediaSanitize.SanitizeCapabilities),
+      &(Device->Controller->ControllerData->Sanicap),
+      sizeof (Device->MediaSanitize.SanitizeCapabilities)
+      );
+
+    //
     // Create StorageSecurityProtocol Instance
     //
     Device->StorageSecurity.ReceiveData = NvmeStorageSecurityReceiveData;
@@ -241,6 +262,8 @@ EnumerateNvmeDevNamespace (
                     &Device->BlockIo2,
                     &gEfiDiskInfoProtocolGuid,
                     &Device->DiskInfo,
+                    &gMediaSanitizeProtocolGuid,
+                    &Device->MediaSanitize,
                     NULL
                     );
 
@@ -269,6 +292,8 @@ EnumerateNvmeDevNamespace (
                &Device->BlockIo2,
                &gEfiDiskInfoProtocolGuid,
                &Device->DiskInfo,
+               &gMediaSanitizeProtocolGuid,
+               &Device->MediaSanitize,
                NULL
                );
         goto Exit;
@@ -468,6 +493,8 @@ UnregisterNvmeNamespace (
                   &Device->BlockIo2,
                   &gEfiDiskInfoProtocolGuid,
                   &Device->DiskInfo,
+                  &gMediaSanitizeProtocolGuid,
+                  &Device->MediaSanitize,
                   NULL
                   );
 
@@ -959,6 +986,14 @@ NvmExpressDriverBindingStart (
                   );
 
   if (EFI_ERROR (Status) && (Status != EFI_ALREADY_STARTED)) {
+    DEBUG ((DEBUG_ERROR, "%a: failed to open PCI I/O protocol (%r)\n", __func__, Status));
+    // need to free the device path protocol if it was opened successfully
+    gBS->CloseProtocol (
+           Controller,
+           &gEfiDevicePathProtocolGuid,
+           This->DriverBindingHandle,
+           Controller
+           );
     return Status;
   }
 
@@ -969,7 +1004,7 @@ NvmExpressDriverBindingStart (
     Private = AllocateZeroPool (sizeof (NVME_CONTROLLER_PRIVATE_DATA));
 
     if (Private == NULL) {
-      DEBUG ((DEBUG_ERROR, "NvmExpressDriverBindingStart: allocating pool for Nvme Private Data failed!\n"));
+      DEBUG ((DEBUG_ERROR, "%a: allocating pool for Nvme Private Data failed!\n", __func__));
       Status = EFI_OUT_OF_RESOURCES;
       goto Exit;
     }
@@ -985,7 +1020,8 @@ NvmExpressDriverBindingStart (
                       );
 
     if (EFI_ERROR (Status)) {
-      return Status;
+      DEBUG ((DEBUG_ERROR, "%a: failed to get PCI attributes (%r)\n", __func__, Status));
+      goto Exit;
     }
 
     //

@@ -4,16 +4,15 @@ Copyright (c) 2023, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 **/
 
-#ifndef FIT_LIB_H_
-#define FIT_LIB_H_
+#pragma once
 
 #include <PiPei.h>
 #include <Library/DebugLib.h>
 #include <Library/FdtLib.h>
 
 typedef struct {
-  UINT64    RelocateType;
   UINT64    Offset;
+  UINT64    RelocateType;
 } FIT_RELOCATE_ITEM;
 
 typedef struct {
@@ -56,5 +55,3 @@ ParseFitImage (
   IN   VOID               *ImageBase,
   OUT  FIT_IMAGE_CONTEXT  *Context
   );
-
-#endif
