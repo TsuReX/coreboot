@@ -223,7 +223,7 @@
 ################################################################################
 
 !include MdePkg/MdeLibs.dsc.inc
-
+!include IpmiFeaturePkg/Include/IpmiFeatureDxe.dsc
 [LibraryClasses]
   #
   # Entry point
@@ -422,6 +422,9 @@
 !endif
   CpuExceptionHandlerLib|UefiCpuPkg/Library/CpuExceptionHandlerLib/DxeCpuExceptionHandlerLib.inf
   CpuPageTableLib|UefiCpuPkg/Library/CpuPageTableLib/CpuPageTableLib.inf
+  IpmiTransportLib|OpenYardPkg/Library/IpmiTransportLibNull/IpmiTransportLibNull.inf
+  PostCodeMapLib|OpenYardPkg/Library/PostCodeMapLib/PostCodeMapLib.inf
+  PostCodeLib|MdePkg/Library/BasePostCodeLibPort80/BasePostCodeLibPort80.inf
 
 [LibraryClasses.AARCH64]
   ArmHvcLib|ArmPkg/Library/ArmHvcLib/ArmHvcLib.inf
@@ -471,7 +474,6 @@
   ArmPlatformLib|ArmVirtPkg/Library/ArmPlatformLibQemu/ArmPlatformLibQemu.inf
   VirtioMmioDeviceLib|OvmfPkg/Library/VirtioMmioDeviceLib/VirtioMmioDeviceLib.inf
   VirtioLib|OvmfPkg/Library/VirtioLib/VirtioLib.inf
-  IpmiTransportLib|OpenYardPkg/Library/IpmiTransportLibNull/IpmiTransportLibNull.inf
 
 [LibraryClasses.common.SEC]
   HobLib|UefiPayloadPkg/Library/PayloadEntryHobLib/HobLib.inf
