@@ -6,16 +6,20 @@ config SOC_INTEL_PANTHERLAKE_BASE
 	select ARCH_X86
 	select BOOT_DEVICE_SUPPORTS_WRITES
 	select CACHE_MRC_SETTINGS
+	select CBFS_PRELOAD
+	select COOP_MULTITASKING
 	select CPU_INTEL_COMMON
 	select CPU_INTEL_COMMON_VOLTAGE
 	select CPU_INTEL_FIRMWARE_INTERFACE_TABLE
 	select CPU_SUPPORTS_INTEL_TME
 	select CPU_SUPPORTS_PM_TIMER_EMULATION
-	select DEFAULT_SOFTWARE_CONNECTION_MANAGER if MAINBOARD_HAS_CHROMEOS
+	select DEFAULT_SOFTWARE_CONNECTION_MANAGER
 	select DEFAULT_X2APIC_LATE_WORKAROUND
 	select POSTPONE_SPI_ACCESS
 	select DISPLAY_FSP_VERSION_INFO_2
+	select DRAM_SUPPORT_DDR5
 	select DRIVERS_USB_ACPI
+	select FAST_SPI_DMA
 	select FAST_SPI_SUPPORTS_EXT_BIOS_WINDOW
 	select FSP_COMPRESS_FSP_S_LZ4
 	select FSP_M_XIP
@@ -102,7 +106,7 @@ config SOC_INTEL_PANTHERLAKE_BASE
 	select SOC_QDF_DYNAMIC_READ_PMC
 	select SSE2
 	select SUPPORT_CPU_UCODE_IN_CBFS
-	select TME_KEY_REGENERATION_ON_WARM_BOOT
+	select TME_KEY_REGENERATION_ON_WARM_BOOT if INTEL_TME
 	select TSC_MONOTONIC_TIMER
 	select UDELAY_TSC
 	select UDK_202302_BINDING
@@ -133,6 +137,13 @@ config SOC_INTEL_PANTHERLAKE_H
 	select SOC_INTEL_PANTHERLAKE
 	help
 	  Choose this option if the mainboard is built using PTL-H 4Xe system-on-a-chip (SoC).
+
+config SOC_INTEL_PANTHERLAKE_PRE_PRODUCTION_SILICON
+	bool
+	default n
+	help
+	  Choose this option if your mainboard has a Panther Lake pre-production
+	  silicon and pre-production signed ME Firmwares are integrated.
 
 config SOC_INTEL_WILDCATLAKE
 	bool
@@ -355,6 +366,7 @@ config CONSOLE_CBMEM_BUFFER_SIZE
 
 config FSP_HEADER_PATH
 	string "Location of FSP headers"
+	default "src/vendorcode/intel/fsp/fsp2_0/wildcatlake" if SOC_INTEL_WILDCATLAKE
 	default "src/vendorcode/intel/fsp/fsp2_0/pantherlake/"
 
 # Override platform debug consent value:
@@ -441,6 +453,7 @@ config SOC_PHYSICAL_ADDRESS_WIDTH
 
 config SOC_INTEL_UFS_CLK_FREQ_HZ
 	int
+	depends on SOC_INTEL_WILDCATLAKE
 	default 38400000
 
 # Override DEBUG Kconfig to avoid false alarm about stack overflow.
@@ -451,5 +464,14 @@ config DEBUG_STACK_OVERFLOW_BREAKPOINTS
 config DEBUG_STACK_OVERFLOW_BREAKPOINTS_IN_ALL_STAGES
 	bool
 	default n
+
+# Increase the CBFS cache size to accommodate FSP-S binary pre-loading
+# process.
+config RAMSTAGE_CBFS_CACHE_SIZE
+	default 0xd0000
+
+# Fast SPI DMA operations require 1 KiB-aligned memory buffers.
+config CBFS_CACHE_ALIGN
+	default 1024
 
 endif

@@ -6,7 +6,7 @@ all-y += ../common/gpio_eint_v1.c ../common/gpio.c ../common/gpio_op.c gpio.c
 all-y += ../common/i2c.c ../common/i2c_common.c i2c.c
 all-y += ../common/pll.c pll.c
 all-$(CONFIG_SPI_FLASH) += ../common/spi.c spi.c
-all-y += timer.c ../common/timer_prepare.c
+all-y += timer.c ../common/timer_prepare_v1.c
 all-y += ../common/uart.c
 
 bootblock-y += ../common/bootblock.c bootblock.c
@@ -29,7 +29,7 @@ romstage-y += ../common/mt6315.c mt6315.c
 romstage-y += ../common/mt6359p.c mt6359p.c
 romstage-y += ../common/pmif.c ../common/pmif_clk.c ../common/pmif_init.c pmif_clk.c
 romstage-y += ../common/pmif_spi.c pmif_spi.c
-romstage-y += ../common/pmif_spmi.c pmif_spmi.c
+romstage-y += ../common/pmif_spmi.c ../common/pmif_spmi_v1.c pmif_spmi.c
 romstage-y += ../common/rtc.c ../common/rtc_osc_init.c ../common/rtc_mt6359p.c
 
 ramstage-y += ../common/auxadc.c
@@ -56,7 +56,7 @@ ramstage-y += ../common/mt6359p.c mt6359p.c
 ramstage-y += ../common/mtcmos.c mtcmos.c
 ramstage-y += ../common/pmif.c ../common/pmif_clk.c ../common/pmif_init.c pmif_clk.c
 ramstage-y += ../common/pmif_spi.c pmif_spi.c
-ramstage-y += ../common/pmif_spmi.c pmif_spmi.c
+ramstage-y += ../common/pmif_spmi.c ../common/pmif_spmi_v1.c pmif_spmi.c
 ramstage-y += ../common/rtc.c ../common/rtc_osc_init.c ../common/rtc_mt6359p.c
 ramstage-y += soc.c
 ramstage-y += ../common/spm.c ../common/spm_v1.c spm.c

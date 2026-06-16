@@ -1,10 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-only OR MIT */
 
+#include <bootmode.h>
 #include <device/device.h>
 #include <device/mmio.h>
 #include <fw_config.h>
 #include <gpio.h>
 #include <soc/bl31.h>
+#include <soc/display.h>
 #include <soc/dpm_v2.h>
 #include <soc/i2c.h>
 #include <soc/msdc.h>
@@ -15,6 +17,7 @@
 #include <soc/usb.h>
 
 #include "gpio.h"
+#include "panel.h"
 #include "storage.h"
 
 #define AFE_SE_SECURE_CON1	(AUDIO_BASE + 0x5634)
@@ -22,9 +25,9 @@
 static void configure_rt9123_rt1019(void)
 {
 	/* SoC I2S */
-	gpio_set_mode(GPIO_I2SOUT1_BCK, GPIO_FUNC(DMIC0_DAT0, I2SOUT1_BCK));
-	gpio_set_mode(GPIO_I2SOUT1_LRCK, GPIO_FUNC(DMIC1_CLK, I2SOUT1_LRCK));
-	gpio_set_mode(GPIO_I2SOUT1_DOUT, GPIO_FUNC(DMIC1_DAT0, I2SOUT1_DO));
+	gpio_set_mode(GPIO_I2S_SPKR_BCK, GPIO_FUNC(DMIC0_DAT0, I2SOUT1_BCK));
+	gpio_set_mode(GPIO_I2S_SPKR_LRCK, GPIO_FUNC(DMIC1_CLK, I2SOUT1_LRCK));
+	gpio_set_mode(GPIO_I2S_SPKR_DO, GPIO_FUNC(DMIC1_DAT0, I2SOUT1_DO));
 
 	printk(BIOS_INFO, "%s: AMP configuration done\n", __func__);
 }
@@ -32,10 +35,10 @@ static void configure_rt9123_rt1019(void)
 static void configure_alc5645(void)
 {
 	/* SoC I2S */
-	gpio_set_mode(GPIO_I2SOUT0_MCK, GPIO_FUNC(I2SOUT0_MCK, I2SOUT0_MCK));
-	gpio_set_mode(GPIO_I2SOUT0_BCK, GPIO_FUNC(I2SOUT0_BCK, I2SOUT0_BCK));
-	gpio_set_mode(GPIO_I2SOUT0_LRCK, GPIO_FUNC(I2SOUT0_LRCK, I2SOUT0_LRCK));
-	gpio_set_mode(GPIO_I2SOUT0_DOUT, GPIO_FUNC(I2SOUT0_DO, I2SOUT0_DO));
+	gpio_set_mode(GPIO_I2S_HP_MCK, GPIO_FUNC(I2SOUT0_MCK, I2SOUT0_MCK));
+	gpio_set_mode(GPIO_I2S_HP_BCK, GPIO_FUNC(I2SOUT0_BCK, I2SOUT0_BCK));
+	gpio_set_mode(GPIO_I2S_HP_LRCK, GPIO_FUNC(I2SOUT0_LRCK, I2SOUT0_LRCK));
+	gpio_set_mode(GPIO_I2S_HP_DO, GPIO_FUNC(I2SOUT0_DO, I2SOUT0_DO));
 
 	/* Init I2C bus timing register for audio codecs */
 	mtk_i2c_bus_init(I2C2, I2C_SPEED_STANDARD);
@@ -86,8 +89,12 @@ enum mtk_storage_type mainboard_get_storage_type(void)
 
 static void mainboard_init(struct device *dev)
 {
-	if (mainboard_get_storage_type() == STORAGE_EMMC)
+	mt6359p_init_pmif_arb();
+
+	if (mainboard_get_storage_type() == STORAGE_EMMC) {
 		mtk_msdc_configure_emmc(true);
+		mtcmos_ufs_power_off();
+	}
 
 	dpm_init();
 	setup_usb_host();
@@ -101,6 +108,18 @@ static void mainboard_init(struct device *dev)
 
 	if (CONFIG(ARM64_USE_ARM_TRUSTED_FIRMWARE))
 		register_reset_to_bl31(GPIO_AP_EC_WARM_RST_REQ.id, true);
+
+	if (display_init_required()) {
+		if (mtk_display_init() < 0)
+			printk(BIOS_ERR, "%s: Failed to init display\n", __func__);
+	} else {
+		printk(BIOS_INFO, "%s: Skipping display init; disabling secure mode\n",
+		       __func__);
+		mtcmos_display_power_on();
+		mtcmos_protect_display_bus();
+		mtk_display_disable_secure_mode();
+	}
+
 }
 
 static void mainboard_enable(struct device *dev)

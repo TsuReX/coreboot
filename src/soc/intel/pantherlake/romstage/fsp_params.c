@@ -50,8 +50,8 @@ static void fill_fspm_igd_params(FSP_M_CONFIG *m_cfg,
 			*ddi_port_upds[i].hpd = !!(config->ddi_ports_config[i] &
 						   DDI_ENABLE_HPD);
 		}
-		/* Disable memory bandwidth compression */
-		m_cfg->MemoryBandwidthCompression = 0;
+		/* Enable memory bandwidth compression */
+		m_cfg->MemoryBandwidthCompression = 1;
 	} else {
 		/* IGD is disabled, skip IGD init in FSP. */
 		m_cfg->IgdDvmt50PreAlloc = 0;
@@ -356,6 +356,21 @@ void platform_display_early_shutdown_notification(void *arg)
 }
 #endif
 
+static void fill_fsps_acoustic_params(FSP_M_CONFIG *m_cfg,
+				   const struct soc_intel_pantherlake_config *config)
+{
+	if (!config->enable_acoustic_noise_mitigation)
+		return;
+
+	m_cfg->AcousticNoiseMitigation = config->enable_acoustic_noise_mitigation;
+
+	for (size_t i = 0; i < ARRAY_SIZE(config->disable_fast_pkgc_ramp); i++) {
+		m_cfg->FastPkgCRampDisable[i] = config->disable_fast_pkgc_ramp[i];
+		m_cfg->SlowSlewRate[i] = config->slow_slew_rate_config[i];
+	}
+}
+
+
 static void soc_memory_init_params(FSP_M_CONFIG *m_cfg,
 				   const struct soc_intel_pantherlake_config *config)
 {
@@ -377,6 +392,7 @@ static void soc_memory_init_params(FSP_M_CONFIG *m_cfg,
 		fill_fspm_trace_params,
 		fill_fspm_thermal_params,
 		fill_fspm_vr_config_params,
+		fill_fsps_acoustic_params,
 	};
 
 	for (size_t i = 0; i < ARRAY_SIZE(fill_fspm_params); i++)

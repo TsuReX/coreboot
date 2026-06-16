@@ -261,7 +261,7 @@ static const struct mux_sel mux_sels[] = {
 	{ .id = CLK_TOP_DP_SEL, .sel = 4 },
 	{ .id = CLK_TOP_EDP_SEL, .sel = 4 },
 	{ .id = CLK_TOP_EDP_FAVT_SEL, .sel = 4 },
-	{ .id = CLK_TOP_SFLASH_SEL, .sel = 0 },
+	{ .id = CLK_TOP_SFLASH_SEL, .sel = 2 },
 	{ .id = CLK_TOP_ECC_SEL, .sel = 5 },
 };
 
@@ -287,7 +287,7 @@ static const struct mux vlp_muxes[] = {
 };
 
 static const struct vlp_mux_sel vlp_mux_sels[] = {
-	{ .id = CLK_VLP_CK_SCP_SEL, .sel = 0 },
+	{ .id = CLK_VLP_CK_SCP_SEL, .sel = 4 },
 	{ .id = CLK_VLP_CK_PWRAP_ULPOSC_SEL, .sel = 0 },
 	{ .id = CLK_VLP_CK_SPMI_P_MST_SEL, .sel = 0 },
 	{ .id = CLK_VLP_CK_DVFSRC_SEL, .sel = 0 },

@@ -6,7 +6,7 @@ all-y += ../common/flash_controller.c
 all-y += ../common/gpio_eint_v1.c ../common/gpio.c ../common/gpio_op.c gpio.c
 all-y += ../common/i2c.c ../common/i2c_common.c i2c.c
 all-$(CONFIG_SPI_FLASH) += ../common/spi.c spi.c
-all-y += ../common/timer.c ../common/timer_prepare.c
+all-y += ../common/timer.c ../common/timer_prepare_v1.c
 all-y += ../common/uart.c
 
 bootblock-y += bootblock.c
@@ -31,7 +31,7 @@ romstage-y += ../common/pll.c pll.c
 romstage-y += scp.c
 romstage-y += ../common/pmif.c ../common/pmif_clk.c ../common/pmif_init.c pmif_clk.c
 romstage-y += ../common/pmif_spi.c pmif_spi.c
-romstage-y += ../common/pmif_spmi.c pmif_spmi.c
+romstage-y += ../common/pmif_spmi.c ../common/pmif_spmi_v1.c pmif_spmi.c
 romstage-y += ../common/mt6315.c mt6315.c
 romstage-y += ../common/mt6359p.c mt6359p.c
 romstage-y += mt6360.c

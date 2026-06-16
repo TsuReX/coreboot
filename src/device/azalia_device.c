@@ -14,12 +14,7 @@ static enum cb_err azalia_set_bits(void *port, u32 mask, u32 val)
 	struct stopwatch sw;
 	u32 reg32;
 
-	/* Write (val & mask) to port */
-	val &= mask;
-	reg32 = read32(port);
-	reg32 &= ~mask;
-	reg32 |= val;
-	write32(port, reg32);
+	clrsetbits32(port, mask, val);
 
 	/* Wait for readback of register to match what was just written to it */
 	stopwatch_init_msecs_expire(&sw, 50);
@@ -71,9 +66,7 @@ static u16 codec_detect(u8 *base)
 	write16(base + HDA_GCAP_REG, read16(base + HDA_GCAP_REG));
 
 	/* clear STATESTS bits (BAR + 0x0e)[14:0] */
-	reg16 = read16(base + HDA_STATESTS_REG);
-	reg16 |= 0x7fff;
-	write16(base + HDA_STATESTS_REG, reg16);
+	setbits16(base + HDA_STATESTS_REG, 0x7fff);
 
 	/* Wait for readback of register to
 	 * match what was just written to it
@@ -183,9 +176,7 @@ static int wait_for_valid(u8 *base)
 	u32 reg32;
 
 	/* Send the verb to the codec */
-	reg32 = read32(base + HDA_ICII_REG);
-	reg32 |= HDA_ICII_BUSY | HDA_ICII_VALID;
-	write32(base + HDA_ICII_REG, reg32);
+	setbits32(base + HDA_ICII_REG, HDA_ICII_BUSY | HDA_ICII_VALID);
 
 	/*
 	 * The timeout is never reached when the codec is functioning properly.
@@ -242,26 +233,12 @@ __weak void mainboard_azalia_program_runtime_verbs(u8 *base, u32 viddid)
 {
 }
 
-static bool codec_is_operative(u8 *base, const int addr)
-{
-	if (wait_for_ready(base) < 0) {
-		printk(BIOS_WARNING, "azalia_audio: controller not ready\n");
-		return false;
-	}
-
-	const u32 reg32 = (addr << 28) | 0x000f0000;
-	write32(base + HDA_IC_REG, reg32);
-
-	if (wait_for_valid(base) < 0) {
-		printk(BIOS_NOTICE, "azalia_audio: codec #%d doesn't respond\n", addr);
-		return false;
-	}
-	return true;
-}
-
 void azalia_codec_init(u8 *base, int addr, const u32 *verb_table, u32 verb_table_bytes)
 {
-	const u32 viddid = read32(base + HDA_IR_REG);
+	if (azalia_write_verb(base, AZALIA_VERB_GET_VENDOR_ID(addr)) < 0)
+		return;
+	u32 viddid = read32(base + HDA_IR_REG);
+
 	const u32 *verb;
 	u32 verb_size;
 
@@ -284,15 +261,10 @@ void azalia_codec_init(u8 *base, int addr, const u32 *verb_table, u32 verb_table
 	mainboard_azalia_program_runtime_verbs(base, viddid);
 }
 
-static bool codec_can_init(const u16 codec_mask, u8 *base, const int addr)
-{
-	return codec_mask & (1 << addr) && codec_is_operative(base, addr);
-}
-
 void azalia_codecs_init(u8 *base, u16 codec_mask)
 {
 	for (int i = AZALIA_MAX_CODECS - 1; i >= 0; i--) {
-		if (codec_can_init(codec_mask, base, i))
+		if (codec_mask & BIT(i))
 			azalia_codec_init(base, i, cim_verb_data, cim_verb_data_size);
 	}
 

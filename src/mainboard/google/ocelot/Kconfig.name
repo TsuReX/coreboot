@@ -2,6 +2,9 @@
 
 comment "Ocelot"
 
+config BOARD_GOOGLE_MATSU
+	bool "-> Matsu"
+
 config BOARD_GOOGLE_OCELOT
 	bool "-> Ocelot"
 
@@ -10,6 +13,9 @@ config BOARD_GOOGLE_OCELOTITE
 
 config BOARD_GOOGLE_OCELOTMCHP
 	bool "-> Ocelotmchp"
+
+config BOARD_GOOGLE_OJAL
+	bool "-> Ojal"
 
 config BOARD_GOOGLE_OCELOT4ES
 	bool "-> Ocelot4ES"

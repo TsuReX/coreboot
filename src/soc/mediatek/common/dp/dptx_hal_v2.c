@@ -282,7 +282,7 @@ void dptx_hal_swing_emp_reset(struct mtk_dp *mtk_dp)
 		    DP_TX2_PRE_EMPH_MASK | DP_TX3_PRE_EMPH_MASK);
 }
 
-void dptx_hal_phy_wait_aux_ldo_ready(struct mtk_dp *mtk_dp)
+static void dptx_hal_phy_wait_aux_ldo_ready(struct mtk_dp *mtk_dp)
 {
 	u32 mask = RGS_BG_CORE_EN_READY_MASK | RGS_AUX_LDO_EN_READY_MASK;
 
@@ -338,4 +338,13 @@ void dptx_hal_phy_set_idle_pattern(struct mtk_dp *mtk_dp, u8 lane_count, bool en
 	}
 	mtk_dp_mask(mtk_dp, REG_3580_DP_TRANS_P0, (enable ? val : 0x0) << 8,
 		    POST_MISC_DATA_LANE_OV_DP_TRANS_4P_MASK);
+}
+
+void dptx_hal_phyd_reset(struct mtk_dp *mtk_dp)
+{
+	mtk_dp_phy_mask(mtk_dp, DP_PHY_DIG_SW_RST, 0, BIT(0));
+	udelay(10);
+	mtk_dp_phy_mask(mtk_dp, DP_PHY_DIG_SW_RST, BIT(0), BIT(0));
+
+	dptx_hal_reset_swing_preemphasis(mtk_dp);
 }
